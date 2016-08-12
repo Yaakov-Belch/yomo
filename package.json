@@ -1,6 +1,6 @@
 {
   "name": "yomo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Yomo: peer-to-peer redux on client and server",
   "main": "v1",
   "repository": {
@@ -25,8 +25,8 @@
   },
   "homepage": "https://github.com/Yaakov-Belch/yomo#readme",
   "scripts": {
-    "test":    "echo \"Error: no test specified\" && exit 1",
-    "build":   "babel src -d lib",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src -d lib",
     "build:w": "babel src -d lib -w"
   },
   "babel": {
