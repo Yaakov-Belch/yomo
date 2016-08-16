@@ -9,12 +9,14 @@ import {delay,ticks} from './util/time.js';
 import mobx from 'mobx';
 
 export {
-  cacheAsync,cacheSlow,auditor,runner,yomoPeek,
-  remoteFn,newBridge,getPipe,pipes,linkPipes,
-  reuse,combineReducers,
-  insecureHttps,
-  getBuffer,getText,getJSON,
-  delay,ticks,
-  mobx,
+  cacheAsync,cacheSlow,   // review API
+  auditor,runner,         // rename API functions
+  yomoPeek,               // remove API
+  remoteFn,newBridge,getPipe,pipes,linkPipes, // refactor API
+  reuse,combineReducers,  // release as separate package
+  insecureHttps,          // release as separate package
+  getBuffer,getText,getJSON, // release as separate package
+  delay,ticks,            // release as separate package
+  mobx,                   // not needed --- already separate pkg
 }; 
 
