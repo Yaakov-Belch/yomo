@@ -1,5 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React       from 'react';
+import ReactDOM    from 'react-dom';
+import Loader      from 'react-loader';
 import withContext from 'recompose/withContext';
 import getContext  from 'recompose/getContext';
 import {observer}  from 'mobx-react';
@@ -14,18 +15,33 @@ export const Provider = withContext(
   ({children})=><div>{children}</div>
 );
 
-export const yomoView=(view,waiting,err)=>observer(getContext(
+export const yomoView=(View,options)=>observer(getContext(
   { yomo: React.PropTypes.func }
 )((props)=>{
-  try { return view(props); }
-  catch(e) {
-    const noop=()=>null;
-    const show=(e)=>{ console.error(e); return null; };
-    const handler=e.waitException? waiting||noop : err||show;
-    try { return handler({...props, exception:e}); }
-    catch(e) { return show(e); }
+  try { return View(props); }
+  catch(exception) {
+    const waiting=
+      (exception.waitException||0) &&
+      (exception.msg==='delay' ? -1:+1);
+    const V=props.yomo.ViewException || ViewException;
+    return <V {...{waiting,exception,options}}/>;
+}}));
+
+export const ViewException=yomoView(({waiting,exception})=> {
+  if(waiting) {
+    const speed=waiting>0? 1:0;
+    return(
+      <span style={{
+        position:'relative',display:'block',height:'2em'
+      }}>
+        <Loader options={{scale:0.8,speed}}/>
+      </span>
+    );
+  } else {
+    console.log(exception);
+    return null;
   }
-}));
+});
 
 export const yomoReact={
   render: ({View,domId},yomo)=>
