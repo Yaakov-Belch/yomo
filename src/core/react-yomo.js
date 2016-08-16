@@ -1,5 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React       from 'react';
+import ReactDOM    from 'react-dom';
+import Loader      from 'react-loader';
 import withContext from 'recompose/withContext';
 import getContext  from 'recompose/getContext';
 import {observer}  from 'mobx-react';
@@ -14,18 +15,21 @@ export const Provider = withContext(
   ({children})=><div>{children}</div>
 );
 
-export const yomoView=(view,waiting,err)=>observer(getContext(
+export const yomoView=(View)=>observer(getContext(
   { yomo: React.PropTypes.func }
 )((props)=>{
-  try { return view(props); }
+  try { return View(props); }
   catch(e) {
-    const noop=()=>null;
-    const show=(e)=>{ console.error(e); return null; };
-    const handler=e.waitException? waiting||noop : err||show;
-    try { return handler({...props, exception:e}); }
-    catch(e) { return show(e); }
+    return ViewException({...props, exception:e});
   }
 }));
+
+const ViewException=()=>
+  <span style={{
+    position:'relative',display:'block',height:'2em'
+  }}>
+    <Loader options={{scale:0.8}}/>
+  </span>;
 
 export const yomoReact={
   render: ({View,domId},yomo)=>
