@@ -103,7 +103,7 @@ export const cacheSlow=metaFn(([spec],yomo,args)=>{
   return res;
 });
 
-export const auditor=metaFn(([fn],yomo,args)=>{
+export const yomoAuditor=metaFn(([fn],yomo,args)=>{
   const res=observable(true);
   res.unsub=autorun(()=>{ try {
     const action=fn(yomo,...args);
@@ -111,8 +111,8 @@ export const auditor=metaFn(([fn],yomo,args)=>{
   } catch(e) { console.error(e); }});
   return res;
 });
-export const runner=(fn)=>
-  auditor((...args)=>{fn(...args); return 0;});
+export const yomoRunner=(fn)=>
+  yomoAuditor((...args)=>{fn(...args); return 0;});
 
 const unwrapEx=(v)=>{
   const e= v && v.wrappedException;
