@@ -8,17 +8,18 @@ import {vWait}           from '../util/my-exceptions.js';
 // subscribeFn=(fnSpec,args,cb)=> done ... done()
 // ipcSpec={ipcUrl,myId?}
 // fnSpec={srcId,fName,pKey, ipcSpec?}
-// bSpec={fnMap,pack,unpack}
+// bSpec={fnMap,pack}
 
 const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
-  // apply fnMap, pack and unpack as defined in bSpec:
+  // apply fnMap and pack as defined in bSpec:
+  const pack=bSpec.pack || {};
   const srv=(fnSpec,args,handler)=> {
     const {fName,pKey}=fnSpec;
     const fn=bSpec.fnMap[fName];
-    const pack=bSpec.pack[pKey]  || {};
-    const init   =pack.init      || (()=>undefined);
-    const reducer=pack.reducer   || ((state,data)=>data);
-    const trafo  =pack.trafo     || (state=>state);
+    const p=pack[pKey] || {};
+    const init   =p.init1    || (()=>undefined);
+    const reducer=p.reducer1 || ((state,data)=>data);
+    const trafo  =p.trafo1   || (state=>state);
     let state=init(...args);
     return yomoRun(yomo,()=>{
       state=reducer(state,fn(yomo,...args));
@@ -28,10 +29,10 @@ const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   const conn=ipc(ipcSpec,srv);
   const subscribeFn=(fnSpec,args,handler)=>{
     if(!fnSpec.fName) { return ()=>{}; }
-    const unpack =bSpec.unpack[fnSpec.pKey] || {};
-    const init   =unpack.init    || (()=>undefined);
-    const reducer=unpack.reducer || ((state,data)=>data);
-    const trafo  =unpack.trafo   || (state=>state);
+    const p =pack[fnSpec.pKey] || {};
+    const init   =p.init2    || (()=>undefined);
+    const reducer=p.reducer2 || ((state,data)=>data);
+    const trafo  =p.trafo2   || (state=>state);
     let state=init(...args);
     return conn.subscribeFn(fnSpec,args,data=>{
       state=reducer(state,data,yomo);
