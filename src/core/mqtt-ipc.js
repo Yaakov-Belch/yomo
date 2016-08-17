@@ -68,7 +68,7 @@ export const mqttIpc=({ipcUrl,myId},srv)=>{
   subscribe('!','subscribe',null,([clientId,qid,fnSpec,args])=>{
     const done=srv(fnSpec,args,(data)=>{
       send(clientId,[myId,qid,data]);
-    });
+    },clientId);
     peerSubscribe(clientId,qid,done);
   });
   subscribe('!','unsubscribe',null,([clientId,qid])=>{

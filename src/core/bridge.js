@@ -4,40 +4,42 @@ import {hasOwnProperty}  from '../util/hasOwnProperty.js';
 import {vWait}           from '../util/my-exceptions.js';
 
 // ipc=(ipcSpec,srv)=>{ unsub, subscribeFn }
-// srv=(fnSpec,args,cb)=>done ... cb(data) ... done()
+// srv=(fnSpec,args,cb,clientId)=>done ... cb(data) ... done()
 // subscribeFn=(fnSpec,args,cb)=> done ... done()
 // ipcSpec={ipcUrl,myId?}
 // fnSpec={srcId,fName,pKey, ipcSpec?}
-// bSpec={fnMap,pack}
+// bSpec=[fnOut,fnIn]
 
-const packFn=(bspec,pKey,k)=>{
-  const p=(bSpec.pack||{})[k] || {};
+const packFn=(bspec,k,pKey)=>{
+  const fn=bSpec[k] || bSpec[0] || {}
   return [
-    p['init'   +k] || (()=>undefined),
-    p['reducer'+k] || ((state,data)=>data),
-    p['trafo'  +k] || ((state)=>state)
+    fn.fn           || fn,
+    fn['init'   +k] || (()=>undefined),
+    fn['reducer'+k] || ((state,data)=>data),
+    fn['trafo'  +k] || ((state)=>state)
+    fn.addId
   ];
 };
 
 const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   // apply fnMap and pack as defined in bSpec:
-  const srv=(fnSpec,args,handler)=> {
-    const fn=bSpec.fnMap[fnSpec.fName];
-    const [init,reducer,trafo]=packFn(bSpec,fnSpec.pKey,1);
-    let state=init(...args);
+  const srv=(fnSpec,args,handler,clientId)=> {
+    const [fn,init,reducer,trafo,a]=packFn(bSpec,0,fnSpec.pKey);
+    if(a) { args=[clientId,...args]; }
+    let state=init(args);
     return yomoRun(yomo,()=>{
-      state=reducer(state,fn(yomo,...args));
-      handler(trafo(state));
+      state=reducer(state,fn(yomo,...args),args);
+      handler(trafo(state,args));
     };
   );
   const conn=ipc(ipcSpec,srv);
   const subscribeFn=(fnSpec,args,handler)=>{
     if(!fnSpec.fName) { return ()=>{}; }
-    const [init,reducer,trafo]=packFn(bSpec,fnSpec.pKey,2);
-    let state=init(...args);
+    const [fn,init,reducer,trafo]=packFn(bSpec,1,fnSpec.pKey);
+    let state=init(args);
     return conn.subscribeFn(fnSpec,args,data=>{
-      state=reducer(state,data,yomo);
-      handler(trafo(state));
+      state=reducer(state,data,args,yomo);
+      handler(trafo(state,args));
     });
   };
   return {subscribeFn,conn.unsub};
