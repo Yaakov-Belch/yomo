@@ -1,7 +1,7 @@
 import mobx from 'mobx';
 const{observable,asReference,createTransformer,autorun}=mobx;
 import canon from 'canon';
-import {wrapEx,unwrapEx,vWait,vDelay}
+import {wrapEx,unwrapEx,isWaitX,vWait,vDelay}
   from '../util/my-exceptions.js';
 
 let nextId=1;
@@ -17,6 +17,7 @@ export const metaFn=(fnTrafo)=>(...spec)=>{
     return unwrapEx(cacheTrafo(data));
   };
   fn.id=id;
+  fn.curry=(...pref)=>(yomo,...args)=>fn(yomo,...pref,...args);
   return fn;
 };
 
@@ -28,7 +29,7 @@ const cacheTrafo=createTransformer(
     process.nextTick(()=>{
       if(!data.cache[data.key]) {
         if(data.res.unsub) { data.res.unsub(); }
-        if(data    .unsub) { data    .unsub(); }
+        if(data    .unsub) { data    .unsub(); } // obsolete?
       }
     })
   }
@@ -73,6 +74,20 @@ export const cacheFn=metaFn(([fn],yomo,args)=>{
   }};
 });
 
+export const cacheFnu=metaFn(([fn],yomo,args)=>{
+  let res;
+  const unsub=()=>{
+    try { res && res.unsub && res.unsub(); }
+    catch(e) {console.log(e);}
+  };
+  const get=()=>{
+    unsub();
+    try { return res=fn(yomo,...args); }
+    catch(e) { return wrapEx(e); }
+  };
+  return { get, unsub };
+});
+
 export const cacheAsync=metaFn(([fn],yomo,args)=>{
   const res=observable(asReference(vWait));
   try {
@@ -107,12 +122,17 @@ export const cacheSlow=metaFn(([spec],yomo,args)=>{
 
 export const yomoAuditor=metaFn(([fn],yomo,args)=>{
   const res=observable(true);
-  res.unsub=autorun(()=>{ try {
+  res.unsub=yomoRun(yomo,()=>{
     const action=fn(yomo,...args);
     if(action) { yomo.dispatch(action); }
-  } catch(e) { console.error(e); }});
+  });
   return res;
 });
 export const yomoRunner=(fn)=>
   yomoAuditor((...args)=>{fn(...args); return 0;});
 
+export const yomoRun=(yomo,fn)=>
+  autorun(()=>{
+    try      { fn(); }
+    catch(e) { if(!isWaitX(e)) { console.log(e); } }
+  });

@@ -1,8 +1,8 @@
 // obsolete //
-import {autorun,action as mobxAction, observable, asReference}
+import {action as mobxAction, observable, asReference}
   from 'mobx';
 import mqtt from 'mqtt';
-import {cacheFn,metaFn} from './cacheFn.js';
+import {cacheFn,metaFn,yomoRun} from './cacheFn.js';
 import {reuse} from '../util/reuse';
 import {mqttBridge} from './mqtt-bridge.js';
 
@@ -14,21 +14,21 @@ export const newBridge=metaFn(([spec0],yomo,[spec1])=>{
 
 export const remoteFn=metaFn(([bridgeFn,info,mkx],yomo,args0)=>{
   if(!info) { [info,...args0]=args0; } // take info from args0
-  const [peerId,fname,bSpec]=info;
+  const [peerId,fName,bSpec]=info;
   const res=observable(asReference(0)); // ==> exception!!
   const [x,args]=
     mkx? mkx(yomo,res,args0,info):[(data)=>res.set(data),args0];
-  const unsub1=autorun(()=>{
+  const unsub1=yomoRun(yomo,()=>{
     (res.unsub||(()=>{}))();
     const bridge=bridgeFn(yomo,...(bSpec||[]));
     const unsub2=
-      bridge.proxyFn(peerId,fname,args,mobxAction(x));
+      bridge.proxyFn(peerId,fName,args,mobxAction(x));
     res.unsub=()=>{unsub2(); unsub1();}
   });
   return res;
 });
 
-// (bridgeFn,[peerId,fname,bSpec,localPipeId,remotePipeId])
+// (bridgeFn,[peerId,fName,bSpec,localPipeId,remotePipeId])
 export const linkPipes=(bridgeFn,info)=>{
   return remoteFn(bridgeFn,info,
     (yomo,_1,_2,[_a,_b,_c,id,id2])=>[

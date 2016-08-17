@@ -1,6 +1,6 @@
 import {yomoApp0} from './core/app.js';
 import {yomoReact,yomoView} from './core/react-yomo.js';
-import {cacheFn,cacheAsync,yomoAuditor,yomoRunner}
+import {cacheFn,cacheFnu,cacheAsync,yomoAuditor,yomoRunner}
   from './core/cacheFn.js';
 
 import {reuse,combineReducers} from './util/reuse.js';
@@ -13,6 +13,6 @@ import {delay,ticks} from './util/time.js';
 const yomoApp=yomoApp0(yomoReact,true);
 export {
   yomoApp,yomoView,
-  cacheFn,cacheAsync,
+  cacheFn,cacheFnu,cacheAsync,
   yomoAuditor,yomoRunner
 };

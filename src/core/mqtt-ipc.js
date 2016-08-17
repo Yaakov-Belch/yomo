@@ -3,7 +3,7 @@ import {add2,del2} from '../util/add2.js';
 import {afterPrefix} from '../util/prefix.js';
 import shortid from 'shortid';
 
-// fnSpec={srcId,fname,ckey}
+// fnSpec={srcId,fName,cKey}
 // srv=(fnSpec,args,cb)=>done ... cb(data) ... done()
 export const mqttIpc=({ipcUrl,myId},srv)=>{
   myId=myId || shortid.generate();
@@ -57,7 +57,7 @@ export const mqttIpc=({ipcUrl,myId},srv)=>{
     if(cb) { cb(); }
   };
 
-  // fnSpec={srcId,fname,ckey}
+  // fnSpec={srcId,fName,cKey}
   const subscribeFn=(fnSpec,args,cb)=>{
     const {srcId}=fnSpec; const qid=nextQid();
     const msg=['!','subscribe',[myId,qid,fnSpec,args]];
