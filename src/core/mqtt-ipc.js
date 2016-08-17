@@ -1,10 +1,13 @@
 import mqtt from 'mqtt';
 import {add2,del2} from '../util/add2.js';
 import {afterPrefix} from '../util/prefix.js';
+import shortid from 'shortid';
 
 // fnSpec={srcId,fname,ckey}
 // srv=(fnSpec,args,cb)=>done ... cb(data) ... done()
-export const mqttIpc=(url,myId,srv)=>{
+export const mqttIpc=({ipcUrl,myId},srv)=>{
+  myId=myId || shortid.generate();
+
   const online={};   // Which servers are active now?
   const mySubs={};   // My subscriptions with sub messages.
   const peerSubs={}; // Unsub handlers for peer subscriptions.
@@ -18,7 +21,7 @@ export const mqttIpc=(url,myId,srv)=>{
   const qos=1; const retain=true;
 
   const will={topic:okTopic,payload:'',retain,qos};
-  const client=mqtt.connect(url,{will});
+  const client=mqtt.connect(ipcUrl,{will});
 
   const disconnect=()=>{
     client.publish(okTopic,'',{retain,qos}); // like will
