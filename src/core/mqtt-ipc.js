@@ -3,7 +3,7 @@ import {add2,del2} from '../util/add2.js';
 import {afterPrefix} from '../util/prefix.js';
 import shortid from 'shortid';
 
-// fnSpec={srcId,fName,cKey}
+// fnSpec={srcId,fName,pKey}
 // srv=(fnSpec,args,cb)=>done ... cb(data) ... done()
 export const mqttIpc=({ipcUrl,myId},srv)=>{
   myId=myId || shortid.generate();
@@ -23,7 +23,7 @@ export const mqttIpc=({ipcUrl,myId},srv)=>{
   const will={topic:okTopic,payload:'',retain,qos};
   const client=mqtt.connect(ipcUrl,{will});
 
-  const disconnect=()=>{
+  const unsub=()=>{
     client.publish(okTopic,'',{retain,qos}); // like will
     client.end();
   };
@@ -57,7 +57,7 @@ export const mqttIpc=({ipcUrl,myId},srv)=>{
     if(cb) { cb(); }
   };
 
-  // fnSpec={srcId,fName,cKey}
+  // fnSpec={srcId,fName,pKey}
   const subscribeFn=(fnSpec,args,cb)=>{
     const {srcId}=fnSpec; const qid=nextQid();
     const msg=['!','subscribe',[myId,qid,fnSpec,args]];
@@ -109,6 +109,6 @@ export const mqttIpc=({ipcUrl,myId},srv)=>{
     } else { console.log('unknown topic:', topic, data+''); }
   });
 
-  return {disconnect, subscribeFn};
+  return {unsub, subscribeFn};
 };
 
