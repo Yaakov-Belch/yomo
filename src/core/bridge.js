@@ -1,12 +1,9 @@
-import mobx from 'mobx';
-const{observable,asReference}=mobx;
-
+import {action,observable,asReference} from 'mobx';
 import {metaFn,cacheFnu,yomoRun} from './cacheFn.js';
-import {mqttIpc}         from './mqtt-ipc.js';
 import {hasOwnProperty}  from '../util/hasOwnProperty.js';
 import {vWait}           from '../util/my-exceptions.js';
 
-// mqttIpc=(ipcSpec,srv)=>{ unsub, subscribeFn }
+// ipc=(ipcSpec,srv)=>{ unsub, subscribeFn }
 // srv=(fnSpec,args,cb)=>done ... cb(data) ... done()
 // subscribeFn=(fnSpec,args,cb)=> done ... done()
 // ipcSpec={ipcUrl,myId?}
@@ -14,6 +11,7 @@ import {vWait}           from '../util/my-exceptions.js';
 // bSpec={fnMap,pack,unpack}
 
 const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
+  // apply fnMap, pack and unpack as defined in bSpec:
   const srv=(fnSpec,args,handler)=> {
     const {fName,pKey}=fnSpec;
     const fn=bSpec.fnMap[fName];
@@ -29,12 +27,13 @@ const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   );
   const conn=ipc(ipcSpec,srv);
   const subscribeFn=(fnSpec,args,handler)=>{
+    if(!fnSpec.fName) { return ()=>{}; }
     const unpack =bSpec.unpack[fnSpec.pKey] || {};
     const init   =unpack.init    || (()=>undefined);
     const reducer=unpack.reducer || ((state,data)=>data);
     const trafo  =unpack.trafo   || (state=>state);
     let state=init(...args);
-    const u=conn.subscribeFn(fnSpec,args,data=>{
+    return conn.subscribeFn(fnSpec,args,data=>{
       state=reducer(state,data,yomo);
       handler(trafo(state));
     });
@@ -46,7 +45,7 @@ const bridge1=metaFn(([connFn,ipcSpec],yomo,args)=>{
   let fnSpec; [fnSpec,...args]=args;
   const v0=hasOwnProperty(fnSpec)? fnSpec.v0 : vWait;
   const res=observable(asReference(v0));
-  const handler=mobx.action(data=>res.set(data));
+  const handler=action(data=>res.set(data));
   yomoRun(yomo,()=>{
     res.unsub && res.unsub();
     const conn=connFn(yomo, ipcSpec || fnSpec.ipcSpec);
