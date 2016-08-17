@@ -6,7 +6,7 @@ import shortid from 'shortid';
 // fnSpec={srcId,fName,pKey}
 // srv=(fnSpec,args,cb)=>done ... cb(data) ... done()
 export const mqttIpc=({ipcUrl,myId},srv)=>{
-  myId=myId || shortid.generate();
+  myId=myId || `client/${shortid.generate()}`;
 
   const online={};   // Which servers are active now?
   const mySubs={};   // My subscriptions with sub messages.

@@ -9,17 +9,20 @@ import {vWait}           from '../util/my-exceptions.js';
 // ipcSpec={ipcUrl,myId?}
 // fnSpec={srcId,fName,pKey, ipcSpec?}
 // bSpec={fnMap,pack}
+const packFn=(bspec,pKey,k)=>{
+  const p=(bSpec.pack||{})[k] || {};
+  return [
+    p['init'   +k] || (()=>undefined),
+    p['reducer'+k] || ((state,data)=>data),
+    p['trafo'  +k] || ((state)=>state)
+  ];
+};
 
 const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   // apply fnMap and pack as defined in bSpec:
-  const pack=bSpec.pack || {};
   const srv=(fnSpec,args,handler)=> {
-    const {fName,pKey}=fnSpec;
-    const fn=bSpec.fnMap[fName];
-    const p=pack[pKey] || {};
-    const init   =p.init1    || (()=>undefined);
-    const reducer=p.reducer1 || ((state,data)=>data);
-    const trafo  =p.trafo1   || (state=>state);
+    const fn=bSpec.fnMap[fnSpec.fName];
+    const [init,reducer,trafo]=packFn(bSpec,fnSpec.pKey,1);
     let state=init(...args);
     return yomoRun(yomo,()=>{
       state=reducer(state,fn(yomo,...args));
@@ -29,10 +32,7 @@ const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   const conn=ipc(ipcSpec,srv);
   const subscribeFn=(fnSpec,args,handler)=>{
     if(!fnSpec.fName) { return ()=>{}; }
-    const p =pack[fnSpec.pKey] || {};
-    const init   =p.init2    || (()=>undefined);
-    const reducer=p.reducer2 || ((state,data)=>data);
-    const trafo  =p.trafo2   || (state=>state);
+    const [init,reducer,trafo]=packFn(bSpec,fnSpec.pKey,2);
     let state=init(...args);
     return conn.subscribeFn(fnSpec,args,data=>{
       state=reducer(state,data,yomo);
@@ -55,5 +55,5 @@ const bridge1=metaFn(([connFn,ipcSpec],yomo,args)=>{
   return res;
 });
 
-export const yomoBridge=(ipc,bSpec,ipcSpec)=>
+export const ipcBridge=(ipc,bSpec,ipcSpec)=>
   bridge1(cacheConn(ipc,bSpec),ipcSpec);
