@@ -109,6 +109,6 @@ export const mqttIpc=({ipcUrl,myId},srv)=>{
     } else { console.log('unknown topic:', topic, data+''); }
   });
 
-  return {unsub, subscribeFn};
+  return {myId, unsub, subscribeFn};
 };
 

@@ -2,11 +2,14 @@ import {cacheFn} from './cacheFn.js';
 import {reuse} from '../util/reuse';
 
 export const linkPipes={
-  fn:(yomo,type,start,rPipe,wPipe)=>getPipe(yomo,rPipe),
-  addId: true,
-  init0: ([clientId,type,start])=>({bottom:start,data:[]}),
-  reducer0: (old,pipe,[clientId,type])=>{
-    switch(type||'pipe') {
+  fn:(yomo,type,top,rPipe,wPipe)=>getPipe(yomo,rPipe),
+  args1: (yomo,[type,rPipe,wPipe])=>
+    [topOf(getPipe(yomo,wPipe)),type,rPipe,wPipe],
+  args0: (yomo,[top,type,rPipe,wPipe],clientId)=>
+    [clientId,top,type,rPipe],
+  init0: ([clientId,top])=>({bottom:top,data:[]}),
+  reducer0: (old,pipe,[clientId,top0,type])=>{
+    switch(type) {
       case 'data': case 'pipe':
         let data=pipe.data;
         let bottom=pipe.bottom;
@@ -23,7 +26,7 @@ export const linkPipes={
   },
   // trafo0: (state)=>state,
   // init1: ()=>undefined,
-  reducer1: (state,data,[type,start,rPipe,wPipe],yomo)=>{
+  reducer1: (state,data,[top,type,rPipe,wPipe],yomo)=>{
     yomo.dispatch({...data,type:'pipe',id:wPipe});
   },
   trafo1: (state)=>true,

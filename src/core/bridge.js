@@ -17,7 +17,7 @@ const packFn=(bspec,k,pKey)=>{
     fn['init'   +k] || (()=>undefined),
     fn['reducer'+k] || ((state,data)=>data),
     fn['trafo'  +k] || ((state)=>state)
-    fn.addId
+    fn['args' +k]
   ];
 };
 
@@ -25,7 +25,7 @@ const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   // apply fnMap and pack as defined in bSpec:
   const srv=(fnSpec,args,handler,clientId)=> {
     const [fn,init,reducer,trafo,a]=packFn(bSpec,0,fnSpec.pKey);
-    if(a) { args=[clientId,...args]; }
+    if(a) { args=a(yomo,args,clientId); }
     let state=init(args);
     return yomoRun(yomo,()=>{
       state=reducer(state,fn(yomo,...args),args);
@@ -35,7 +35,8 @@ const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   const conn=ipc(ipcSpec,srv);
   const subscribeFn=(fnSpec,args,handler)=>{
     if(!fnSpec.fName) { return ()=>{}; }
-    const [fn,init,reducer,trafo]=packFn(bSpec,1,fnSpec.pKey);
+    const [fn,init,reducer,trafo,a]=packFn(bSpec,1,fnSpec.pKey);
+    if(a) { args=a(yomo,args,conn.myId); }
     let state=init(args);
     return conn.subscribeFn(fnSpec,args,data=>{
       state=reducer(state,data,args,yomo);
