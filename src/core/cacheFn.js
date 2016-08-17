@@ -1,6 +1,8 @@
 import mobx from 'mobx';
 const{observable,asReference,createTransformer,autorun}=mobx;
 import canon from 'canon';
+import {wrapEx,unwrapEx,vWait,vDelay}
+  from '../util/my-exceptions.js';
 
 let nextId=1;
 export const metaFn=(fnTrafo)=>(...spec)=>{
@@ -72,7 +74,7 @@ export const cacheFn=metaFn(([fn],yomo,args)=>{
 });
 
 export const cacheAsync=metaFn(([fn],yomo,args)=>{
-  const res=observable(asReference(wrappedWaitException));
+  const res=observable(asReference(vWait));
   try {
     fn(yomo,...args).then(mobx.action((v)=>{res.set(v);}));
     return res;
@@ -80,13 +82,13 @@ export const cacheAsync=metaFn(([fn],yomo,args)=>{
 });
 export const cacheSlow=metaFn(([spec],yomo,args)=>{
   const {fn,delay,refresh}=spec;
-  const res=observable(asReference(wrappedDelayException));
+  const res=observable(asReference(vDelay));
   let id;
   const tick=(dt,wait)=>{
     id=setTimeout(()=>{
       try{
         if(wait){
-          mobx.action(()=>res.set(wrappedWaitException))();
+          mobx.action(()=>res.set(vWait))();
         }
         fn(yomo,...args).then(mobx.action(
           (v)=>{res.set(v); next();}
@@ -114,17 +116,3 @@ export const yomoAuditor=metaFn(([fn],yomo,args)=>{
 export const yomoRunner=(fn)=>
   yomoAuditor((...args)=>{fn(...args); return 0;});
 
-const unwrapEx=(v)=>{
-  const e= v && v.wrappedException;
-  if(e) { throw e; } else { return v; }
-};
-export const wrapEx=(wrappedException)=>({wrappedException});
-function WaitException(msg){
-  this.waitException=true;
-  this.name="waitException";
-  this.msg=msg;
-}
-export const wrappedWaitException=wrapEx(new WaitException());
-export const wrappedDelayException=wrapEx(
-  new WaitException('delay')
-);

@@ -1,3 +1,4 @@
+// obsolete //
 import {autorun,action as mobxAction, observable, asReference}
   from 'mobx';
 import mqtt from 'mqtt';

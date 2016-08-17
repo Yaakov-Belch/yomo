@@ -2,8 +2,9 @@ import mqtt from 'mqtt';
 import {add2,del2} from '../util/add2.js';
 import {afterPrefix} from '../util/prefix.js';
 
-// srv=({fname,ckey},args,cb)=>done ... cb(data) ... done()
-const mqttIpc=(url,myId,srv)=>{
+// fnSpec={srcId,fname,ckey}
+// srv=(fnSpec,args,cb)=>done ... cb(data) ... done()
+export const mqttIpc=(url,myId,srv)=>{
   const online={};   // Which servers are active now?
   const mySubs={};   // My subscriptions with sub messages.
   const peerSubs={}; // Unsub handlers for peer subscriptions.
@@ -53,16 +54,16 @@ const mqttIpc=(url,myId,srv)=>{
     if(cb) { cb(); }
   };
 
-  // spec={srcId,fname,ckey}
-  const subscribeFn=(spec,args,cb)=>{
-    const {srcId}=spec; const qid=nextQid();
-    const msg=['!','subscribe',[myId,qid,spec,args]];
+  // fnSpec={srcId,fname,ckey}
+  const subscribeFn=(fnSpec,args,cb)=>{
+    const {srcId}=fnSpec; const qid=nextQid();
+    const msg=['!','subscribe',[myId,qid,fnSpec,args]];
     subscribe(srcId,qid,msg,cb);
     return ()=>send(srcId,['!','unsubscribe',[myId,qid]]);
   };
 
-  subscribe('!','subscribe',null,([clientId,qid,spec,args])=>{
-    const done=srv(spec,args,(data)=>{
+  subscribe('!','subscribe',null,([clientId,qid,fnSpec,args])=>{
+    const done=srv(fnSpec,args,(data)=>{
       send(clientId,[myId,qid,data]);
     });
     peerSubscribe(clientId,qid,done);
