@@ -9,6 +9,7 @@ import {vWait}           from '../util/my-exceptions.js';
 // ipcSpec={ipcUrl,myId?}
 // fnSpec={srcId,fName,pKey, ipcSpec?}
 // bSpec={fnMap,pack}
+
 const packFn=(bspec,pKey,k)=>{
   const p=(bSpec.pack||{})[k] || {};
   return [
@@ -42,7 +43,7 @@ const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   return {subscribeFn,conn.unsub};
 });
 
-const bridge1=metaFn(([connFn,ipcSpec],yomo,args)=>{
+const connBridge=metaFn(([connFn,ipcSpec],yomo,args)=>{
   let fnSpec; [fnSpec,...args]=args;
   const v0=hasOwnProperty(fnSpec)? fnSpec.v0 : vWait;
   const res=observable(asReference(v0));
@@ -56,4 +57,4 @@ const bridge1=metaFn(([connFn,ipcSpec],yomo,args)=>{
 });
 
 export const ipcBridge=(ipc,bSpec,ipcSpec)=>
-  bridge1(cacheConn(ipc,bSpec),ipcSpec);
+  connBridge(cacheConn(ipc,bSpec),ipcSpec);
