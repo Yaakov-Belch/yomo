@@ -1,11 +1,5 @@
-// obsolete //
-import {action as mobxAction, observable, asReference}
-  from 'mobx';
-import mqtt from 'mqtt';
-import {cacheFn,metaFn,yomoRun} from './cacheFn.js';
+import {cacheFn} from './cacheFn.js';
 import {reuse} from '../util/reuse';
-import {mqttBridge} from './mqtt-bridge.js';
-
 
 export const linkPipes={
   fn:(yomo,type,start,rPipe,wPipe)=>getPipe(yomo,rPipe),
@@ -28,31 +22,20 @@ export const linkPipes={
     }
   },
   // trafo0: (state)=>state,
-  // init1: ([type,start])=>undefined,
+  // init1: ()=>undefined,
   reducer1: (state,data,[type,start,rPipe,wPipe],yomo)=>{
     yomo.dispatch({...data,type:'pipe',id:wPipe});
   },
-  trafo1: (state)=>1,
+  trafo1: (state)=>true,
 }
 
-// (bridgeFn,[peerId,fName,bSpec,localPipeId,remotePipeId])
-export const linkPipes=(bridgeFn,info)=>{
-  return remoteFn(bridgeFn,info,
-    (yomo,_1,_2,[_a,_b,_c,id,id2])=>[
-      data=>{
-        const type='pipe';
-        const action=
-          data.data?{...data,type,id}:{type,id,acc:1,key:data};
-        yomo.dispatch(action);
-      },
-      [id2,topOf(yomo().pipes[id]||emptyPipe)]
-    ]
-  );
-};
 const emptyPipe={bottom:0,data:[]};
+const topOf=({bottom,data})=>bottom+data.length;
+
 export const getPipe=cacheFn( (yomo,id)=>
   yomo().pipes[id] || emptyPipe
 );
+
 export const pipes=(state={},action)=>{
   if(action.type!=='pipe') { return state; }
   const {id}=action; if(!id) { return state; }
@@ -76,20 +59,4 @@ const pipe=(state=emptyPipe,action)=>{
     bottom=acc;
   }
   return reuse(state,{bottom,data});
-};
-
-const topOf=({bottom,data})=>bottom+data.length;
-const accTop=cacheFn((c,id)=>topOf(getPipe(c,id)));
-const accBot=cacheFn((c,id)=>getPipe(c,id).bottom);
-const iFuncs={accTop,accBot,pipeData:getPipe};
-const compressor={
-  pipeData:([id,lastBottom])=>({bottom,data})=> {
-    if(bottom>lastBottom) { console.log('skiped data (ok)'); }
-    if(bottom<lastBottom) {
-      data=data.slice(lastBottom-bottom);
-      bottom=lastBottom;
-    }
-    lastBottom=bottom+data.length;
-    return {bottom,data};
-  },
 };
