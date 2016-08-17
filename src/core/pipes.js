@@ -6,28 +6,6 @@ import {cacheFn,metaFn,yomoRun} from './cacheFn.js';
 import {reuse} from '../util/reuse';
 import {mqttBridge} from './mqtt-bridge.js';
 
-export const newBridge=metaFn(([spec0],yomo,[spec1])=>{
-  const bridge=
-    mqttBridge(yomo,{...spec0,...(spec1||{})},iFuncs,compressor);
-  return {get:()=>bridge, unsub:()=>bridge.end()};
-});
-
-export const remoteFn=metaFn(([bridgeFn,info,mkx],yomo,args0)=>{
-  if(!info) { [info,...args0]=args0; } // take info from args0
-  const [peerId,fName,bSpec]=info;
-  const res=observable(asReference(0)); // ==> exception!!
-  const [x,args]=
-    mkx? mkx(yomo,res,args0,info):[(data)=>res.set(data),args0];
-  const unsub1=yomoRun(yomo,()=>{
-    (res.unsub||(()=>{}))();
-    const bridge=bridgeFn(yomo,...(bSpec||[]));
-    const unsub2=
-      bridge.proxyFn(peerId,fName,args,mobxAction(x));
-    res.unsub=()=>{unsub2(); unsub1();}
-  });
-  return res;
-});
-
 // (bridgeFn,[peerId,fName,bSpec,localPipeId,remotePipeId])
 export const linkPipes=(bridgeFn,info)=>{
   return remoteFn(bridgeFn,info,
