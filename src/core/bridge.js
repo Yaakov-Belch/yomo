@@ -31,7 +31,7 @@ const noCtrl={
   }
 };
 
-const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
+const cacheConn=(ipc,bSpec)=>cacheFnu((yomo,ipcSpec)=> {
   let [srvMap,clientMap]=bSpec ||[];
   srvMap=srvMap||{}; clientMap=clientMap||srvMap;
 
