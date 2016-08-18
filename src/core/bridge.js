@@ -3,59 +3,56 @@ import {metaFn,cacheFnu,yomoRun} from './cacheFn.js';
 import {hasOwnProperty}  from '../util/hasOwnProperty.js';
 import {vWait}           from '../util/my-exceptions.js';
 
-// ipc=(ipcSpec,srv)=>{ unsub, subscribeFn }
-// srv=(fnSpec,args,cb,clientId)=>done ... cb(data) ... done()
-// subscribeFn=(fnSpec,args,cb)=> done ... done()
+// bSpec=[srvMap,clientMap]
 // ipcSpec={ipcUrl,myId?}
-// fnSpec={srcId,fName,pKey, ipcSpec?}
-// bSpec=[fnOut,fnIn]
+// cSpec={peerId,fname,args}
 
-const packFn=(bspec,k,pKey)=>{
-  const fn=bSpec[k] || bSpec[0] || {}
-  return [
-    fn.fn           || fn,
-    fn['init'   +k] || (()=>undefined),
-    fn['reducer'+k] || ((state,data)=>data),
-    fn['trafo'  +k] || ((state)=>state)
-    fn['args' +k]
-  ];
+const noFn=()=>false;
+const noCtrl={
+  client: {
+    start: (info)=>info.connect(info.args),
+    proc:  (info,data,state)=> info.recv(data),
+    stop:  (info,state)=>{},
+  },
+  srv: {
+    start: (info)=>{
+      const {yomo,sendData,fnDef,args}=info;
+      //++ forward exceptions; catch incorrect fnDef outside
+      return yomoRun(yomo,
+        ()=> sendData((fnDef.fn||fnDef)(...args))
+      );
+    },
+    proc: (info,data,state)=>state,
+    stop: (info,state)=> state && state();
+  }
 };
 
 const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
-  // apply fnMap and pack as defined in bSpec:
-  const srv=(fnSpec,args,handler,clientId)=> {
-    const [fn,init,reducer,trafo,a]=packFn(bSpec,0,fnSpec.pKey);
-    if(a) { args=a(yomo,args,clientId); }
-    let state=init(args);
-    return yomoRun(yomo,()=>{
-      state=reducer(state,fn(yomo,...args),args);
-      handler(trafo(state,args));
-    };
-  );
-  const conn=ipc(ipcSpec,srv);
-  const subscribeFn=(fnSpec,args,handler)=>{
-    if(!fnSpec.fName) { return ()=>{}; }
-    const [fn,init,reducer,trafo,a]=packFn(bSpec,1,fnSpec.pKey);
-    if(a) { args=a(yomo,args,conn.myId); }
-    let state=init(args);
-    return conn.subscribeFn(fnSpec,args,data=>{
-      state=reducer(state,data,args,yomo);
-      handler(trafo(state,args));
-    });
-  };
-  return {subscribeFn,conn.unsub};
-});
+  let [srvMap,clientMap]=bSpec; clientMap=clientMap||srvMap;
 
-const connBridge=metaFn(([connFn,ipcSpec],yomo,args)=>{
-  let fnSpec; [fnSpec,...args]=args;
+  const lookup=(onServer,cSpec,cb)=>{
+    const {peerId,fname,args}=cSpec;
+    const fnDef=(onServer?srvMap:clientMap)[fname] || noFn;
+    const k=onServer? 'srv':'client';
+    const ctrl=fnDef[k] || noCtrl[k];
+    cb({yomo,ctrl,fnDef});
+  };
+
+  return ipc(ipcSpec,lookup);
+}
+
+const connBridge=metaFn(([cfn,ipcSpec],yomo,[fnSpec,...args])=>{
   const v0=hasOwnProperty(fnSpec)? fnSpec.v0 : vWait;
   const res=observable(asReference(v0));
-  const handler=action(data=>res.set(data));
-  yomoRun(yomo,()=>{
-    res.unsub && res.unsub();
-    const conn=connFn(yomo, ipcSpec || fnSpec.ipcSpec);
-    res.unsub=conn && conn.subscribeFn(fnSpec,args,handler);
+  const recv=action(data=>res.set(data));
+  let cDone;
+  const done=yomoRun(yomo,()=>{
+    cDone && cDone();
+    const spec=ipcSpec || fnSpec.ipcSpec;
+    const conn=spec && cfn(yomo, spec);
+    cDone=conn && conn.connectFn({...fnSpec,args},recv);
   });
+  res.unsub=()=>{ done(); cDone && cDone(); };
   return res;
 });
 
