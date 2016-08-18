@@ -43,7 +43,6 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     client.publish(`data/${peerId}`,msg,{qos});
   } catch(e){ console.log('failed send:',peerId, msg); }};
 
-
   const subscribe=(peerId,qid,channel)=>{
     wr2(mySubs,peerId,qid,channel);
     if(online[peerId]) { startChannel(channel); }
