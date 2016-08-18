@@ -1,7 +1,7 @@
 import {untracked} from 'mobx';
-import {cacheFn} from './cacheFn.js';
+import {cacheFn,yomoRun} from './cacheFn.js';
 import {reuse} from '../util/reuse';
-import {untracked} from 'mobx';
+import {hasOwnProperty}  from '../util/hasOwnProperty.js';
 
 const startClient=(info)=>{
   const {yomo,args,connect,done}=info;
