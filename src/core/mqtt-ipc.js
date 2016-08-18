@@ -70,13 +70,13 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     const {peerId,fname,args}=cSpec;
     const qid=nextQid();
     let ok=true;
-    lookup(false,cSpec,({yomo,ctrl,fnSpec})=>{
+    lookup(false,cSpec,({yomo,ctrl,fnDef})=>{
       const connect=(args2)=>
         send(peerId,['subscribe',myId,qid,fname,args2]);
       const sendData=(data)=>
         send(peerId,['cData',myId,qid,data]);
       const info={
-        yomo, fname,args, fnSpec,recv,
+        yomo, fname,args, fnDef,recv,
         connect,sendData,
         peerId, ipcSpec, client:true,
       };
@@ -123,11 +123,11 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   }};
 
   defCmd('subscribe',([__,peerId,qid,fname,args])=>{
-    lookup(true,{peerId,fname,args},({yomo,ctrl,fnSpec})=>{
+    lookup(true,{peerId,fname,args},({yomo,ctrl,fnDef})=>{
       const sendData=(data)=>
         send(peerId,['sData',myId,qid,data]);
       const info={
-        yomo, fname,args, fnSpec, sendData,
+        yomo, fname,args, fnDef, sendData,
         peerId, ipcSpec, server:true
       };
       const channel={info,ctrl};
