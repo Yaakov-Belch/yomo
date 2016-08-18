@@ -55,7 +55,7 @@ export const yomoPeek=metaFn((spec,yomo,args)=>{
     state=reducer(yomo,state,data.args,true);
   }
   const res=observable(asReference(trafo2(state)));
-  // use add2?
+  // use wr2?
   if(!yomo.peek) { yomo.peek={}; }
   yomo.peek[fn.id]=yomo.peek[fn.id]||{};
   yomo.peek[fn.id][id]=mobx.action((args2,add)=>

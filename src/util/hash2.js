@@ -1,7 +1,10 @@
 import {emptyObj} from './util/emptyObj.js';
 
-export const add2= (obj,k1,k2,data)=>
+export const wr2= (obj,k1,k2,data)=>
   (obj[k1]=obj[k1]||{})[k2]=data;
+
+export const rd2= (obj,k1,k2)=>
+  (obj[k1]||{})[k2];
 
 export const del2=(obj,k1,k2)=>{
   const x=obj[k1]; if(!x) { return undefined; }
