@@ -66,7 +66,9 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     const qid=nextQid();
     let ok=true;
     lookup(false,cSpec,({yomo,ctrl,fnSpec})=>{
-      const connect=(args)=>....
+      const connect=(args)=>{
+        send(peerId,['!','subscribe',[]]);
+      };
       const send=(data)=>....
       const info={
         yomo, fname,args, fnSpec,recv,
@@ -112,21 +114,21 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     if(confirmed && !info.done) { startChannel(channel); }
   }};
 
-  subscribeAction('subscribe',(i,[clientId,qid,fname,args])=>{
+  subscribeAction('subscribe',(i,[peerId,qid,fname,args])=>{
     lookup(true,{fname,args},({yomo,ctrl,fnSpec})=>{
       const send=(data)=>....
       const info={
         yomo, fname,args, fnSpec, send
-        peerId:clientId, ipcSpec, server:true
+        peerId, ipcSpec, server:true
       };
       const channel={info,ctrl};
-      peerSubscribe(clientId,qid,channel);
+      peerSubscribe(peerId,qid,channel);
       startChannel(channel);
     });
   });
-  subscribeAction('unsubscribe',(i,[clientId,qid])=>{
-    peerUnSubscribe(clientId,qid);
-    send(clientId,['!','confirmUnsub',[myId,qid]]);
+  subscribeAction('unsubscribe',(i,[peerId,qid])=>{
+    peerUnSubscribe(peerId,qid);
+    send(peerId,['!','confirmUnsub',[myId,qid]]);
   });
   subscribeAction('confirmUnsub',(i,[peerId,qid])=>{
     unsubscribe(peerId,qid,false,true);
