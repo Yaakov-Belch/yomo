@@ -89,6 +89,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   };
 
   const startChannel=(channel)=>{
+    // On the client:
     // If the peer is now offline but gets online later,
     // startChannel will be called automatically.
     if(channel && channel.info && online[channel.info.peerId]) {
@@ -110,12 +111,12 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     if(active && stop) { stop(info,state); }
     channel.state=channel.active=undefined;
 
-    if(done) { info.done=true; }
-    if(info.done && (confirmed || !online[info.peerId])) {
+    if(done) { channel.done=true; }
+    if(channel.done && (confirmed || !online[info.peerId])) {
       return true; // ok to delete the channel.
     }
     // a spurious confirmUnsub triggers a new startChannel:
-    if(confirmed && !info.done) { startChannel(channel); }
+    if(confirmed && !channel.done) { startChannel(channel); }
     return false; // don't delete the channel.
   }};
 
