@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import {wr2,rd2,del2} from '../util/hash2.js';
+import {wr2,rd2,del2,forEach2} from '../util/hash2.js';
 import {afterPrefix} from '../util/prefix.js';
 import shortid from 'shortid';
 
@@ -27,6 +27,8 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   const client=mqtt.connect(ipcUrl,{will});
 
   const unsub=()=>{
+    forEach2(mySubs,  (channel)=>stopChannel(channel));
+    forEach2(peerSubs,(channel)=>stopChannel(channel));
     client.publish(okTopic,'',{retain,qos}); // like will
     client.end();
   };
@@ -48,7 +50,9 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     if(online[peerId]) { startChannel(channel); }
   };
   const unsubscribe=(peerId,qid,done,confirmed)=>{
-    stopChannel(rd2(mySubs,peerId,qid),done,confirmed);
+    if(stopChannel(rd2(mySubs,peerId,qid),done,confirmed)) {
+      del2(mySubs,peerId,qid);
+    }
   };
 
   const peerSubscribe=(clientId,qid,channel)=>{
@@ -57,16 +61,16 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   };
   const peerUnSubscribe=(clientId,qid)=>{
     const channel=del2(peerSubs,clientId,qid);
-    stopChannel(channel,true,true);
+    stopChannel(channel);
   };
 
-  const connect=(cSpec,recv)=>{
+  const connectIpc=(cSpec,recv)=>{
     const {peerId,fname,args}=cSpec;
     const qid=nextQid();
     let ok=true;
     lookup(false,cSpec,({yomo,ctrl,fnSpec})=>{
       const connect=(args2)=>
-        send(peerId,['subscribe',peerId,qid,fname,args2]);
+        send(peerId,['subscribe',myId,qid,fname,args2]);
       const sendData=(data)=>
         send(peerId,['cData',myId,qid,data]);
       const info={
@@ -108,14 +112,15 @@ export const mqttIpc=(ipcSpec,lookup)=>{
 
     if(done) { info.done=true; }
     if(info.done && (confirmed || !online[info.peerId])) {
-      return del2(mySubs,peerId,qid); // remove channel
+      return true; // ok to delete the channel.
     }
     // a spurious confirmUnsub triggers a new startChannel:
     if(confirmed && !info.done) { startChannel(channel); }
+    return false; // don't delete the channel.
   }};
 
   defCmd('subscribe',([__,peerId,qid,fname,args])=>{
-    lookup(true,{fname,args},({yomo,ctrl,fnSpec})=>{
+    lookup(true,{peerId,fname,args},({yomo,ctrl,fnSpec})=>{
       const sendData=(data)=>
         send(peerId,['sData',myId,qid,data]);
       const info={
@@ -144,14 +149,12 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   client.on('message',(topic,msg)=>{
     //// console.log(`@${myId} ${topic}: ${msg+''}`); ////
     if(topic===dataTopic) { try {
-      const [peerId,qid,data]=JSON.parse(msg.toString());
-      const channel=rd2(mySubs,peerId,qid);
-      if(channel) { procChannel(channel,data); }
-      else { console.log(
-        `unknown qid ${peerId}==>${myId}:`,qid,args
-      );}
+      msg=JSON.parse(msg.toString());
+      const handler=cmds[msg[0]];
+      if(handler) { handler(msg); }
+      else { console.log('unknown cmd:',msg); }
       return;
-    } catch(e) {return console.log('bad message',myId,data,e)}}
+    } catch(e) {return console.log('bad message',myId,msg,e);}}
 
     const peerId=afterPrefix('online/',topic);
     if(peerId){
@@ -168,5 +171,5 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     } else { console.log('unknown topic:', topic, data+''); }
   });
 
-  return {connect,unsub};
+  return {connectIpc,unsub};
 };

@@ -12,3 +12,12 @@ export const del2=(obj,k1,k2)=>{
   if(emptyObj(x)) { delete obj[k1]; }
   return v;
 };
+
+export const forEach2=(obj,fn)=>{
+  for(let i in obj) { const x=obj[i];
+    for(let j in x) { const y=x[j];
+      fn(y);
+    }
+  }
+}
+
