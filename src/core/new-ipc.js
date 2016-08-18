@@ -83,7 +83,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     });
     return ()=>{
       ok=false;
-      unsubscribe(peerId,qid,true);
+      unsubscribe(peerId,qid,true,false);
       send(peerId,['unsubscribe',myId,qid]);
     };
   };
