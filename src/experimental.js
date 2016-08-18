@@ -5,7 +5,13 @@ import {newBridge,remoteFn,linkPipes,pipes,getPipe}
 import {getBuffer,getText,getJSON} from './util/getx.js';
 import {delay,ticks} from './util/time.js';
 
+import {mqttIpc} from './core/mqtt-ipc';
+import {ipcBridge} from './core/bridge.js';
+const yomoBridge=(bSpec,ipcSpec)=>
+  ipcBridge(mqttIpc,bSpec,ipcSpec);
+
 export {
+  yomoBrigde,             // try and approve
   cacheSlow,              // review API, improve implementation
   yomoPeek,               // remove API
   remoteFn,newBridge,getPipe,pipes,linkPipes, // refactor API

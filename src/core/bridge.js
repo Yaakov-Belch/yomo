@@ -3,7 +3,11 @@ import {metaFn,cacheFnu,yomoRun} from './cacheFn.js';
 import {hasOwnProperty}  from '../util/hasOwnProperty.js';
 import {vWait}           from '../util/my-exceptions.js';
 
-// bSpec=[srvMap,clientMap]
+// bSpec=[srvMap,clientMap]  Map: fname->fnDef
+// fnDef= function || {fn,client?,srv?} client/srv:ctrl
+// ctrl={start,proc,stop}
+
+// fnSpec={peerId,fname, ipcSpec?, v0?}
 // ipcSpec={ipcUrl,myId?}
 // cSpec={peerId,fname,args}
 
@@ -28,7 +32,8 @@ const noCtrl={
 };
 
 const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
-  let [srvMap,clientMap]=bSpec; clientMap=clientMap||srvMap;
+  let [srvMap,clientMap]=bSpec ||[];
+  srvMap||={}; clientMap=clientMap||srvMap;
 
   const lookup=(onServer,cSpec,cb)=>{
     const {peerId,fname,args}=cSpec;
