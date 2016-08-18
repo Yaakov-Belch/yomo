@@ -164,8 +164,8 @@ export const mqttIpc=(ipcSpec,lookup)=>{
 
     const peerId=afterPrefix('online/',topic);
     if(peerId){
-      //// console.log('<== online:', peerId, data+''); ////
-      if(data.toString()!=='') { // start-up: (re)subscribe
+      //// console.log('<== online:', peerId, msg+''); ////
+      if(msg.toString()!=='') { // start-up: (re)subscribe
         online[peerId]=true;
         const x=mySubs[peerId]||{};
         for(let qid in x){ startChannel(x[qid]); }
