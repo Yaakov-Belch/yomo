@@ -1,10 +1,13 @@
 import {cacheFn} from './cacheFn.js';
 import {reuse} from '../util/reuse';
+import {untracked} from 'mobx';
 
 export const linkPipes={
   fn:(yomo,type,top,rPipe,wPipe)=>getPipe(yomo,rPipe),
   args1: (yomo,[type,rPipe,wPipe])=>
-    [topOf(getPipe(yomo,wPipe)),type,rPipe,wPipe],
+    [ untracked(()=>topOf(getPipe(yomo,wPipe))),
+      type,rPipe,wPipe
+    ],
   args0: (yomo,[top,type,rPipe,wPipe],clientId)=>
     [clientId,top,type,rPipe],
   init0: ([clientId,top])=>({bottom:top,data:[]}),
