@@ -5,7 +5,7 @@ import shortid from 'shortid';
 
 export const mqttIpc=(ipcSpec,lookup)=>{
   if(!ipcSpec.myId) {
-    (ipcSpec={...ipcSpec,myId:`client/${shortid.generate()}`});
+    (ipcSpec={...ipcSpec, myId:`client/${shortid.generate()}`});
   }
   const {ipcUrl,myId}=ipcSpec;
 
@@ -42,14 +42,14 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   } catch(e){ console.log('failed send:',peerId, msg); }};
 
   const subscribeAction=(qid,proc)=>
-    subscribe('!',qid,{ctrl:{proc}});
+    subscribe('!',qid, {ctrl:{proc}}); // channel without info
 
   const subscribe=(peerId,qid,channel)=>{
     wr2(mySubs,peerId,qid,channel);
     if(online[peerId]) { startChannel(channel); }
   };
-  const unsubscribe=(peerId,qid)=>{
-    del2(mySubs,peerId,qid);
+  const unsubscribe=(peerId,qid,done,confirmed)=>{
+    stopChannel(rd2(mySubs,peerId,qid),done,confirmed);
   };
 
   const peerSubscribe=(clientId,qid,channel)=>{
@@ -58,7 +58,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   };
   const peerUnSubscribe=(clientId,qid)=>{
     const channel=del2(peerSubs,clientId,qid);
-    stopChannel(channel);
+    stopChannel(channel,true,true);
   };
 
   const connect=(cSpec,recv)=>{
@@ -66,8 +66,8 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     const qid=nextQid();
     let ok=true;
     lookup(false,cSpec,({yomo,ctrl,fnSpec})=>{
-      const connect=(args)=>
-      const send=(data)=>
+      const connect=(args)=>....
+      const send=(data)=>....
       const info={
         yomo, fname,args, fnSpec,recv,
         connect,send,
@@ -78,32 +78,43 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     });
     return ()=>{
       ok=false;
-      unsubscribe(peerId,qid);
+      unsubscribe(peerId,qid,true);
       send(peerId,['!','unsubscribe',[myId,qid]]); ??....
     };
   };
 
-  const startChannel=(channel)=>{ if(channel && channel.info) {
-    const {ctrl:{start},info,active}=channel;
-    if(active) { stopChannel(channel); }
-    channel.active=true;
-    channel.state=start(info);
-  }};
+  const startChannel=(channel)=>{
+    // If the peer is now offline but gets online later,
+    // startChannel will be called automatically.
+    if(channel && channel.info && online[channel.info.peerId]) {
+      const {ctrl:{start},info,active}=channel;
+      if(active) { stopChannel(channel); }
+      channel.active=true;
+      channel.state=start(info);
+    }
+  };
 
   const procChannel=(channel,data)=>{ if(channel) {
     const {active,ctrl:{proc},info,state}=channel;
     if(active) { channel.state=proc(info,data,state); }
   }};
 
-  const stopChannel=(channel)=>{ if(channel) {
+  const stopChannel=(channel,done,confirmed)=>{ if(channel) {
     const {active,ctrl:{stop},info,state}=channel;
-    if(active) { stop(info,state); }
+    if(active && stop) { stop(info,state); }
     channel.state=channel.active=undefined;
+
+    if(done) { info.done=true; }
+    if(info.done && (confirmed || !online[info.peerId])) {
+      return del2(mySubs,peerId,qid); // remove channel
+    }
+    // a spurious confirmUnsub triggers a new startChannel:
+    if(confirmed && !info.done) { startChannel(channel); }
   }};
 
   subscribeAction('subscribe',(i,[clientId,qid,fname,args])=>{
     lookup(true,{fname,args},({yomo,ctrl,fnSpec})=>{
-      const send=(data)=>
+      const send=(data)=>....
       const info={
         yomo, fname,args, fnSpec, send
         peerId:clientId, ipcSpec, server:true
@@ -118,12 +129,12 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     send(clientId,['!','confirmUnsub',[myId,qid]]);
   });
   subscribeAction('confirmUnsub',(i,[peerId,qid])=>{
-    unsubscribe(peerId,qid);
+    unsubscribe(peerId,qid,false,true);
   });
 
   client.on('message',(topic,msg)=>{
     //// console.log(`@${myId} ${topic}: ${msg+''}`); ////
-    if(topic===myTopic) { try {
+    if(topic===dataTopic) { try {
       const [peerId,qid,data]=JSON.parse(msg.toString());
       const channel=rd2(mySubs,peerId,qid);
       if(channel) { procChannel(channel,data); }
