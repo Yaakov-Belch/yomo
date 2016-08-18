@@ -10,12 +10,14 @@ const yomoBridge=(bSpec,ipcSpec)=>
   ipcBridge(mqttIpc,bSpec,ipcSpec);
 
 export {
-  yomoBrigde,              // try and approve
-  cacheSlow,               // review API, improve implementation
-  yomoPeek,                // remove API
+  yomoBridge,              // try and approve
   linkPipes,pipes,getPipe, // review, approve or sep package
-  reuse,combineReducers,   // release as separate package
+  cacheSlow,               // review API, improve implementation
+
+  reuse,combineReducers,     // release as separate package
   getBuffer,getText,getJSON, // release as separate package
-  delay,ticks,             // release as separate package
+  delay,ticks,               // release as separate package
+
+  yomoPeek,                // remove API
 }; 
 
