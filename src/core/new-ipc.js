@@ -160,13 +160,13 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     if(peerId){
       //// console.log('<== online:', peerId, data+''); ////
       if(data.toString()!=='') { // start-up: (re)subscribe
+        online[peerId]=true;
         const x=mySubs[peerId]||{};
         for(let qid in x){ startChannel(x[qid]); }
-        online[peerId]=true;
       } else {                   // shut-down
+        delete online[peerId];
         const x=peerSubs[peerId]; delete peerSubs[peerId];
         for(let qid in x){ stopChannel(x[qid]); }
-        delete online[peerId];
       }
     } else { console.log('unknown topic:', topic, data+''); }
   });
