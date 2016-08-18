@@ -66,7 +66,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     stopChannel(channel);
   };
 
-  const connectIpc=(cSpec,recv)=>{
+  const connectFn=(cSpec,recv)=>{
     const {peerId,fname,args}=cSpec;
     const qid=nextQid();
     let ok=true;
@@ -182,5 +182,5 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     } else { console.log('unknown topic:', topic, msg+''); }
   });
 
-  return {connectIpc,unsub};
+  return {connectFn,unsub};
 };
