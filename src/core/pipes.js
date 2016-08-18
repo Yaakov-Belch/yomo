@@ -1,39 +1,82 @@
+import {untracked} from 'mobx';
 import {cacheFn} from './cacheFn.js';
 import {reuse} from '../util/reuse';
 import {untracked} from 'mobx';
 
-export const linkPipes={
-  fn:(yomo,type,top,rPipe,wPipe)=>getPipe(yomo,rPipe),
-  args1: (yomo,[type,rPipe,wPipe])=>
-    [ untracked(()=>topOf(getPipe(yomo,wPipe))),
-      type,rPipe,wPipe
-    ],
-  args0: (yomo,[top,type,rPipe,wPipe],clientId)=>
-    [clientId,top,type,rPipe],
-  init0: ([clientId,top])=>({bottom:top,data:[]}),
-  reducer0: (old,pipe,[clientId,top0,type])=>{
-    switch(type) {
-      case 'data': case 'pipe':
-        let data=pipe.data;
-        let bottom=pipe.bottom;
-        let top=topOf(old);
-        if(top>bottom) {
-          data=data.slice(top-bottom);
-          bottom=top;
-        }
-        const acc=(type==='data')? undefined : pipe.bottom;
-        return {acc,bottom,data};
-      case 'bottom': return {acc:pipe.bottom};
-      case 'top':    return {acc:topOf(pipe)};
+const startClient=(info)=>{
+  const {yomo,args,connect,done}=info;
+  done && done(); info.done=undefined;
+
+  const [type,pipeId,type2,pipeId2]=args;
+  setType(info,type); info.pipeId=pipeId
+
+  const top1=untracked(()=>topOf(getPipe(yomo,pipeId)));
+  connect([type2,pipeId2,top1]);
+  return ...;
+};
+const startSrv=(info)=>{
+  const [type,pipeId,top]=args;
+  setType(info,type); info.pipeId=pipeId
+  return serve(info,top);
+};
+const types={
+  data:   [true,  false   ],
+  pipe:   [true,  'bottom'],
+  no:     [false, false   ],
+  bottom: [false, 'bottom'],
+  top:    [false, 'top'   ],
+};
+const setType=(info,type)=>{
+  [info.wantData, info.wantAcc]=types[type||'no'] || [];
+};
+
+const serve=(info,top)=>{
+  const {yomo,done,wantData,wantAcc,pipeId,sendData}=info;
+  done && done();
+  info.done=yomoRun(yomo,()=>{
+    const p=getPipe(yomo,pipeId);
+
+    let msg;
+    if(wantData) {
+      let {bottom,data}=p;
+      if(top>bottom) {
+        wantData && (data=data.slice(top-bottom));
+        bottom=top;
+      }
+      msg={bottom,data};
+    } else {
+      msg={};
     }
-  },
-  // trafo0: (state)=>state,
-  // init1: ()=>undefined,
-  reducer1: (state,data,[top,type,rPipe,wPipe],yomo)=>{
-    yomo.dispatch({...data,type:'pipe',id:wPipe});
-  },
-  trafo1: (state)=>true,
-}
+
+    if(wantAcc==='bottom') { msg.acc=p.bottom; }
+    if(wantAcc==='top')    { msg.acc=topOf(p); }
+
+    sendData(msg);
+  });
+};
+
+const proc=(info,data,state)=>{
+  if(data.top!==undefined) { return serve(info,data.top); }
+  const {yomo,pipeId}=info;
+  yomo.dispatch({...data,type:'pipe',id:pipeId});
+  return state;
+};
+
+const stop=(info,state)=>{
+  const {done}=info;
+  done && done(); info.done=undefined;
+};
+
+const ctrl={
+  start: (info)=>{},
+  proc:  (info,data,state)=>{},
+  stop:  (info,state)=>{},
+};
+
+export const linkPipes={
+  client: {start:startClient, proc, stop},
+  srv:    {start:startSrv,    proc, stop},
+};
 
 const emptyPipe={bottom:0,data:[]};
 const topOf=({bottom,data})=>bottom+data.length;
