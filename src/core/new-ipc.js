@@ -1,7 +1,8 @@
-import mqtt from 'mqtt';
+import mqtt                    from 'mqtt';
 import {wr2,rd2,del2,forEach2} from '../util/hash2.js';
-import {afterPrefix} from '../util/prefix.js';
-import shortid from 'shortid';
+import {emptyObj}              from '../util/emptyObj.js';
+import {afterPrefix}           from '../util/prefix.js';
+import shortid                 from 'shortid';
 
 export const mqttIpc=(ipcSpec,lookup)=>{
   if(!ipcSpec.myId) {
@@ -172,8 +173,13 @@ export const mqttIpc=(ipcSpec,lookup)=>{
         delete online[peerId];
         const x=peerSubs[peerId]; delete peerSubs[peerId];
         for(let qid in x){ stopChannel(x[qid]); }
+        const y=mySubs[peerId];
+        for(let qid in y){
+          if(stopChannel(y[qid],false,false)) { delete y[qid]; }
+        }
+        if(emptyObj(y)) { delete mySubs[peerId]; }
       }
-    } else { console.log('unknown topic:', topic, data+''); }
+    } else { console.log('unknown topic:', topic, msg+''); }
   });
 
   return {connectIpc,unsub};
