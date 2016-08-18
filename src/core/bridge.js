@@ -27,13 +27,13 @@ const noCtrl={
       );
     },
     proc: (info,data,state)=>state,
-    stop: (info,state)=> state && state();
+    stop: (info,state)=> state && state(),
   }
 };
 
 const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   let [srvMap,clientMap]=bSpec ||[];
-  srvMap||={}; clientMap=clientMap||srvMap;
+  srvMap=srvMap||{}; clientMap=clientMap||srvMap;
 
   const lookup=(onServer,cSpec,cb)=>{
     const {peerId,fname,args}=cSpec;
@@ -44,7 +44,7 @@ const cacheConn=cacheFnu(([ipc,bSpec],yomo,ipcSpec)=> {
   };
 
   return ipc(ipcSpec,lookup);
-}
+});
 
 const connBridge=metaFn(([cfn,ipcSpec],yomo,[fnSpec,...args])=>{
   const v0=hasOwnProperty(fnSpec)? fnSpec.v0 : vWait;

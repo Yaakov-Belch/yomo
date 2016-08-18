@@ -1,4 +1,4 @@
-import {emptyObj} from './util/emptyObj.js';
+import {emptyObj} from './emptyObj.js';
 
 export const wr2= (obj,k1,k2,data)=>
   (obj[k1]=obj[k1]||{})[k2]=data;

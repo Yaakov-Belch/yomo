@@ -141,16 +141,16 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   defCmd('confirmUnsub',([__,peerId,qid])=>{
     unsubscribe(peerId,qid,false,true);
   });
-  defCmd('sData',([__,peerId,qid,data])=>
+  defCmd('sData',([__,peerId,qid,data])=> {
     const channel=rd2(mySubs,peerId,qid);
     if(!channel) {console.log('no channel1 for:',peerId,qid);}
     procChannel(channel,data);
-  );
-  defCmd('cData',([__,peerId,qid,data])=>
+  });
+  defCmd('cData',([__,peerId,qid,data])=> {
     const channel=rd2(peerSubs,peerId,qid);
     if(!channel) {console.log('no channel2 for:',peerId,qid);}
     procChannel(channel,data);
-  );
+  });
 
   client.on('message',(topic,msg)=>{
     //// console.log(`@${myId} ${topic}: ${msg+''}`); ////

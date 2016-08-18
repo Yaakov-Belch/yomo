@@ -12,12 +12,11 @@ const startClient=(info)=>{
 
   const top1=untracked(()=>topOf(getPipe(yomo,pipeId)));
   connect([type2,pipeId2,top1]);
-  return ...;
 };
 const startSrv=(info)=>{
   const [type,pipeId,top]=args;
   setType(info,type); info.pipeId=pipeId
-  return serve(info,top);
+  serve(info,top);
 };
 const types={
   data:   [true,  false   ],
@@ -59,7 +58,6 @@ const proc=(info,data,state)=>{
   if(data.top!==undefined) { return serve(info,data.top); }
   const {yomo,pipeId}=info;
   yomo.dispatch({...data,type:'pipe',id:pipeId});
-  return state;
 };
 
 const stop=(info,state)=>{
