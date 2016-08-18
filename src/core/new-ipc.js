@@ -55,12 +55,12 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     }
   };
 
-  const peerSubscribe=(clientId,qid,channel)=>{
-    peerUnSubscribe(clientId,qid);
-    wr2(peerSubs,clientId,qid,channel);
+  const peerSubscribe=(peerId,qid,channel)=>{
+    peerUnSubscribe(peerId,qid);
+    wr2(peerSubs,peerId,qid,channel);
   };
-  const peerUnSubscribe=(clientId,qid)=>{
-    const channel=del2(peerSubs,clientId,qid);
+  const peerUnSubscribe=(peerId,qid)=>{
+    const channel=del2(peerSubs,peerId,qid);
     stopChannel(channel);
   };
 
