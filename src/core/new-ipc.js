@@ -41,96 +41,92 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     client.publish(`data/${peerId}`,msg,{qos});
   } catch(e){ console.log('failed send:',peerId, msg); }};
 
-  const subscribeAction=(qid,handler)=> {
-    const proc=(info,data)=>handler(data);
-    const channel={qid,info:{peerId:'!'},ctrl:{proc}};
-    subscribe(channel);
+  const subscribeAction=(qid,proc)=>
+    subscribe('!',qid,{ctrl:{proc}});
+
+  const subscribe=(peerId,qid,channel)=>{
+    wr2(mySubs,peerId,qid,channel);
+    if(online[peerId]) { startChannel(channel); }
   };
-  const subscribe=(channel)=>{
-    const {qid, info:{peerId:srvId}}=channel;
-    wr2(mySubs,srvId,qid,channel);
-    if(online[srvId]) { startChannel(channel); }
-  };
-  const unsubscribe=(srvId,qid)=>{
-    del2(mySubs,srvId,qid);
+  const unsubscribe=(peerId,qid)=>{
+    del2(mySubs,peerId,qid);
   };
 
-  const peerSubscribe=(clientId,qid,cb)=>{
+  const peerSubscribe=(clientId,qid,channel)=>{
     peerUnSubscribe(clientId,qid);
-    wr2(peerSubs,clientId,qid,cb);
+    wr2(peerSubs,clientId,qid,channel);
   };
   const peerUnSubscribe=(clientId,qid)=>{
-    const cb=del2(peerSubs,clientId,qid);
-    if(cb) { cb(); }
+    const channel=del2(peerSubs,clientId,qid);
+    stopChannel(channel);
   };
---------------------------------------------------------------
+
   const connect=(cSpec,recv)=>{
-    const {srvId,fname,args}=cSpec;
+    const {peerId,fname,args}=cSpec;
     const qid=nextQid();
-    lookup(cSpec,({yomo,ctrl,fnSpec})=>{
+    let ok=true;
+    lookup(false,cSpec,({yomo,ctrl,fnSpec})=>{
       const connect=(args)=>
       const send=(data)=>
       const info={
         yomo, fname,args, fnSpec,recv,
         connect,send,
-        peerId:srvId, ipcSpec, client:true,
+        peerId, ipcSpec, client:true,
       };
-      const channel={info,ctrl,qid};
-      subscribe(channel);
+      const channel={info,ctrl};
+      ok && subscribe(peerId,qid,channel);
     });
-    return ()=>....
+    return ()=>{
+      ok=false;
+      unsubscribe(peerId,qid);
+      send(peerId,['!','unsubscribe',[myId,qid]]); ??....
+    };
   };
 
-  const startChannel=(channel)=>{
+  const startChannel=(channel)=>{ if(channel && channel.info) {
     const {ctrl:{start},info,active}=channel;
-    if(start) {
-      if(active) { stopChannel(channel); }
-      channel.active=true;
-      channel.state=start(info);
-    }
-  };
-  const procChannel=(channel,data)=>{
+    if(active) { stopChannel(channel); }
+    channel.active=true;
+    channel.state=start(info);
+  }};
+
+  const procChannel=(channel,data)=>{ if(channel) {
     const {active,ctrl:{proc},info,state}=channel;
     if(active) { channel.state=proc(info,data,state); }
-  }
-  const stopChannel=(channel)=>{
+  }};
+
+  const stopChannel=(channel)=>{ if(channel) {
     const {active,ctrl:{stop},info,state}=channel;
     if(active) { stop(info,state); }
     channel.state=channel.active=undefined;
-  };
+  }};
 
-
-  // fnSpec={srvId,fName,pKey}
-  const subscribeFn=(fnSpec,args,cb)=>{
-    const {srvId}=fnSpec; const qid=nextQid();
-    const msg=['!','subscribe',[myId,qid,fnSpec,args]];
-    subscribe(srvId,qid,msg,cb);
-    return ()=>send(srvId,['!','unsubscribe',[myId,qid]]);
-  };
-
-  subscribe('!','subscribe',null,([clientId,qid,fnSpec,args])=>{
-    const done=srv(fnSpec,args,(data)=>{
-      send(clientId,[myId,qid,data]);
-    },clientId);
-    peerSubscribe(clientId,qid,done);
+  subscribeAction('subscribe',(i,[clientId,qid,fname,args])=>{
+    lookup(true,{fname,args},({yomo,ctrl,fnSpec})=>{
+      const send=(data)=>
+      const info={
+        yomo, fname,args, fnSpec, send
+        peerId:clientId, ipcSpec, server:true
+      };
+      const channel={info,ctrl};
+      peerSubscribe(clientId,qid,channel);
+      startChannel(channel);
+    });
   });
-  subscribe('!','unsubscribe',null,([clientId,qid])=>{
+  subscribeAction('unsubscribe',(i,[clientId,qid])=>{
     peerUnSubscribe(clientId,qid);
     send(clientId,['!','confirmUnsub',[myId,qid]]);
   });
-  subscribe('!','confirmUnsub',null,([srvId,qid])=>{
-    unsubscribe(srvId,qid);
+  subscribeAction('confirmUnsub',(i,[peerId,qid])=>{
+    unsubscribe(peerId,qid);
   });
---------------------------------------------------------------
 
-  *** check logic ***
-
-  client.on('message',(topic,data)=>{
-    //// console.log(`@${myId} ${topic}: ${data+''}`); ////
+  client.on('message',(topic,msg)=>{
+    //// console.log(`@${myId} ${topic}: ${msg+''}`); ////
     if(topic===myTopic) { try {
-      const [peerId,qid,args]=JSON.parse(data.toString());
-      const {handler}=(mySubs[peerId]||{})[qid] || {};
-      if(handler) { handler(args); }
+      const [peerId,qid,data]=JSON.parse(msg.toString());
+      const channel=rd2(mySubs,peerId,qid);
+      if(channel) { procChannel(channel,data); }
       else { console.log(
         `unknown qid ${peerId}==>${myId}:`,qid,args
       );}
@@ -146,7 +142,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
         online[peerId]=true;
       } else {                   // shut-down
         const x=peerSubs[peerId]; delete peerSubs[peerId];
-        for(let qid in x){ x[qid](); }
+        for(let qid in x){ stopChannel(x[qid]); }
         delete online[peerId];
       }
     } else { console.log('unknown topic:', topic, data+''); }
