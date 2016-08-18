@@ -58,6 +58,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   const peerSubscribe=(peerId,qid,channel)=>{
     peerUnSubscribe(peerId,qid);
     wr2(peerSubs,peerId,qid,channel);
+    startChannel(channel);
   };
   const peerUnSubscribe=(peerId,qid)=>{
     const channel=del2(peerSubs,peerId,qid);
@@ -92,7 +93,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     // On the client:
     // If the peer is now offline but gets online later,
     // startChannel will be called automatically.
-    if(channel && channel.info && online[channel.info.peerId]) {
+    if(channel && online[channel.info.peerId]) {
       const {ctrl:{start},info,active}=channel;
       if(active) { stopChannel(channel); }
       channel.active=true;
@@ -108,7 +109,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
 
   const stopChannel=(channel,done,confirmed)=>{ if(channel) {
     const {active,ctrl:{stop},info,state}=channel;
-    if(active && stop) { stop(info,state); }
+    if(active) { stop(info,state); }
     channel.state=channel.active=undefined;
 
     if(done) { channel.done=true; }
@@ -130,7 +131,6 @@ export const mqttIpc=(ipcSpec,lookup)=>{
       };
       const channel={info,ctrl};
       peerSubscribe(peerId,qid,channel);
-      startChannel(channel);
     });
   });
   defCmd('unsubscribe',([__,peerId,qid])=>{
@@ -141,10 +141,14 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     unsubscribe(peerId,qid,false,true);
   });
   defCmd('sData',([__,peerId,qid,data])=>
-    procChannel(rd2(mySubs,peerId,qid),data)
+    const channel=rd2(mySubs,peerId,qid);
+    if(!channel) {console.log('no channel1 for:',peerId,qid);}
+    procChannel(channel,data);
   );
   defCmd('cData',([__,peerId,qid,data])=>
-    procChannel(rd2(peerSubs,peerId,qid),data)
+    const channel=rd2(peerSubs,peerId,qid);
+    if(!channel) {console.log('no channel2 for:',peerId,qid);}
+    procChannel(channel,data);
   );
 
   client.on('message',(topic,msg)=>{
