@@ -8,7 +8,7 @@ const startClient=(info)=>{
   done && done(); info.done=undefined;
 
   const [type,pipeId,type2,pipeId2]=args;
-  setType(info,type); info.pipeId=pipeId
+  setType(info,type); info.pipeId=pipeId;
 
   const top1=untracked(()=>topOf(getPipe(yomo,pipeId)));
   connect([type2,pipeId2,top1]);
@@ -40,7 +40,7 @@ const serve=(info,top)=>{
     if(wantData) {
       let {bottom,data}=p;
       if(top>bottom) {
-        wantData && (data=data.slice(top-bottom));
+        data=data.slice(top-bottom);
         bottom=top;
       }
       msg={bottom,data};
@@ -67,12 +67,6 @@ const stop=(info,state)=>{
   done && done(); info.done=undefined;
 };
 
-const ctrl={
-  start: (info)=>{},
-  proc:  (info,data,state)=>{},
-  stop:  (info,state)=>{},
-};
-
 export const linkPipes={
   client: {start:startClient, proc, stop},
   srv:    {start:startSrv,    proc, stop},
@@ -90,21 +84,23 @@ export const pipes=(state={},action)=>{
   const {id}=action; if(!id) { return state; }
   return reuse(state,{...state,[id]:pipe(state[id],action)});
 };
+
 const pipe=(state=emptyPipe,action)=>{
   let {bottom,data}=state; let top=bottom+data.length;
   const {bottom:b2,data:d2,value,acc}=action;
   if(d2) {
+    if(acc!==undefined && acc>top) {top=acc; data=[];}
     if(b2>top) {
-      console.log('skipped data2 (ok)',state,action);
-      bottom=b2; data=d2;
-    } else {
-      const tmp=d2.slice(top-b2);
-      if(tmp.length>0) { data=[...data,...tmp]; }
+      console.log('skipped data2',state,action);
+      data=[...data]; data[b2-bottom-1]=undefined; top=b2;
     }
+
+    const tmp=(b2===top)? d2 : d2.slice(top-b2);
+    if(tmp.length>0) { data=[...data,...tmp]; }
   }
   if(hasOwnProperty(action,'value')) { data=[...data,value]; }
   if(acc!==undefined && acc>bottom) {
-    data=data.slice(key-bottom);
+    data=data.slice(acc-bottom);
     bottom=acc;
   }
   return reuse(state,{bottom,data});
