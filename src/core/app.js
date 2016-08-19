@@ -18,6 +18,8 @@ export const yomoApp0=(spec,curry)=> {
   yomo.cache={};
   yomo.ViewException=ViewException;
 
+  yomo.dispatchSoon=(action)=>
+    process.nextTick(yomo.dispatch,action);
   yomo.dispatch=mobx.action((action)=>
     state.set(reducer(state.get(),action)));
   yomo.dispatch({type:'@@redux/INIT'});
