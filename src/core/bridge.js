@@ -47,7 +47,7 @@ const cacheConn=(ipc,bSpec)=>cacheFnu((yomo,ipcSpec)=> {
 });
 
 const connBridge=metaFn(([cfn,ipcSpec],yomo,[fnSpec,...args])=>{
-  const v0=hasOwnProperty(fnSpec)? fnSpec.v0 : vWait;
+  const v0=hasOwnProperty(fnSpec,'v0')? fnSpec.v0 : vWait;
   const res=observable(asReference(v0));
   const recv=action(data=>res.set(data));
   let cDone;

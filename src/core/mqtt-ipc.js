@@ -41,7 +41,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   });
 
   const send=(peerId,msg)=>{ try {
-    console.log(`${myId}==>${peerId}`,msg); ////
+    //// console.log(`${myId}==>${peerId}`,msg); ////
     msg=JSON.stringify(msg);
     client.publish(`data/${peerId}`,msg,{qos});
   } catch(e){ console.log('failed send:',peerId, msg); }};
@@ -156,7 +156,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   });
 
   client.on('message',(topic,msg)=>{
-    console.log(`@${myId} ${topic}: ${msg+''}`); ////
+    //// console.log(`@${myId} ${topic}: ${msg+''}`); ////
     if(topic===dataTopic) { try {
       msg=JSON.parse(msg.toString());
       const handler=cmds[msg[0]];
