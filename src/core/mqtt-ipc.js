@@ -41,7 +41,7 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   });
 
   const send=(peerId,msg)=>{ try {
-    console.log(`${myId}==>${peerId}`,msg); ////
+    //// console.log(`${myId}==>${peerId}`,msg); ////
     msg=JSON.stringify(msg);
     client.publish(`data/${peerId}`,msg,{qos});
   } catch(e){ console.log('failed send:',peerId, msg); }};
@@ -91,6 +91,9 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   };
 
   const startChannel=(channel)=>{
+    if(1) {
+      const {peerId,fname,args}=channel.info;
+    }
     // On the client:
     // If the peer is now offline but gets online later,
     // startChannel will be called automatically.
@@ -164,11 +167,12 @@ export const mqttIpc=(ipcSpec,lookup)=>{
 
     const peerId=afterPrefix('online/',topic);
     if(peerId){
-      //// console.log('<== online:', peerId, msg+''); ////
       if(msg.toString()!=='') { // start-up: (re)subscribe
-        online[peerId]=true;
-        const x=mySubs[peerId]||{};
-        for(let qid in x){ startChannel(x[qid]); }
+        if(!online[peerId]) { // un-bounce ok messages
+          online[peerId]=true;
+          const x=mySubs[peerId]||{};
+          for(let qid in x){ startChannel(x[qid]); }
+        }
       } else {                   // shut-down
         delete online[peerId];
         const x=peerSubs[peerId]; delete peerSubs[peerId];
