@@ -1,5 +1,6 @@
 import mobx from 'mobx';
-const {observable, asReference, autorun, useStrict}=mobx;
+const {observable, asReference, useStrict}=mobx;
+import {yomoRun} from './cacheFn.js';
 useStrict(true);
 
 const ok={reducer:1,ViewException:1,run:1,render:1,View:1};
@@ -17,11 +18,13 @@ export const yomoApp0=(spec,curry)=> {
   yomo.cache={};
   yomo.ViewException=ViewException;
 
+  yomo.dispatchSoon=(action)=>
+    process.nextTick(yomo.dispatch,action);
   yomo.dispatch=mobx.action((action)=>
     state.set(reducer(state.get(),action)));
   yomo.dispatch({type:'@@redux/INIT'});
 
-  run    && run.forEach(fn=>autorun(()=>fn(yomo)));
+  run    && run.forEach(fn=>yomoRun(yomo,()=>fn(yomo)));
   render && render(spec,yomo);
 };
 

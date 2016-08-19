@@ -4,6 +4,7 @@ import Loader      from 'react-loader';
 import withContext from 'recompose/withContext';
 import getContext  from 'recompose/getContext';
 import {observer}  from 'mobx-react';
+import {isWaitX}   from '../util/my-exceptions.js';
 
 export const Provider = withContext(
   {
@@ -20,9 +21,7 @@ export const yomoView=(View,options)=>observer(getContext(
 )((props)=>{
   try { return View(props); }
   catch(exception) {
-    const waiting=
-      (exception.waitException||0) &&
-      (exception.msg==='delay' ? -1:+1);
+    const waiting=isWaitX(exception);
     const V=props.yomo.ViewException || ViewException;
     return <V {...{waiting,exception,options}}/>;
 }}));

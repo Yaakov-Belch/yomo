@@ -53,7 +53,8 @@
     "react-dom": "^15.1.0",
     "react-loader": "^2.4.0",
     "recompose": "^0.20.2",
-    "shallowequal": "^0.2.2"
+    "shallowequal": "^0.2.2",
+    "shortid": "^2.2.6"
   },
   "peerDependencies": {
     "react": "^15.2.0"
