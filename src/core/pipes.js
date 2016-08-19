@@ -14,8 +14,13 @@ const startClient=(info)=>{
   connect([type2,pipeId2,top1]);
 };
 const startSrv=(info)=>{
-  const [type,pipeId,top]=info.args;
+  const {yomo,args,sendData}=info;
+  const [type,pipeId,top]=args;
   setType(info,type); info.pipeId=pipeId
+
+  const top1=untracked(()=>topOf(getPipe(yomo,pipeId)));
+  sendData({top:top1});
+
   serve(info,top);
 };
 const types={
