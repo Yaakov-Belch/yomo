@@ -53,6 +53,18 @@ export const cacheFnu=metaFn(([fn],yomo,args)=>{
   return { get, unsub };
 });
 
+const onOff=cacheFnu((yomo,id,action)=>{
+  yomo.dispatchSoon({...action, onOff:+1});
+  return { unsub:()=>yomo.dispatch({...action, onOff:-1}) }
+});
+let onOffCounter=1;
+export const onOffAction=(yomo,...args)=> {
+  onOff(yomo,0,...args); return true;
+};
+export const onOffActionUnique=(yomo,...args)=> {
+  onOff(yomo,onOffCounter++,...args); return true;
+};
+
 export const cacheAsync=metaFn(([fn],yomo,args)=>{
   const res=observable(asReference(vWait));
   try {

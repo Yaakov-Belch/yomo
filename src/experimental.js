@@ -1,4 +1,5 @@
-import {cacheSlow,cacheFnu} from './core/cacheFn.js';
+import {cacheSlow,onOffAction,onOffActionUnique,}
+  from './core/cacheFn.js';
 import {reuse,combineReducers} from './util/reuse.js';
 import {linkPipes,pipes,getPipe} from './core/pipes.js';
 import {getBuffer,getText,getJSON} from './util/getx.js';
@@ -10,10 +11,10 @@ const yomoBridge=(bSpec,ipcSpec)=>
   ipcBridge(mqttIpc,bSpec,ipcSpec);
 
 export {
-  yomoBridge,              // try and approve
+  yomoBridge,              // review and approve
   linkPipes,pipes,getPipe, // review, approve or sep package
+  onOffAction,onOffActionUnique, // review and approve
   cacheSlow,               // review API, improve implementation
-  cacheFnu,                // keep internal
 
   reuse,combineReducers,     // release as separate package
   getBuffer,getText,getJSON, // release as separate package
