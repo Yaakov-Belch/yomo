@@ -23,7 +23,7 @@ const noCtrl={
       const {yomo,sendData,fnDef,args}=info;
       //++ forward exceptions; catch incorrect fnDef outside
       return yomoRun(yomo,
-        ()=> sendData((fnDef.fn||fnDef)(...args))
+        ()=> sendData((fnDef.fn||fnDef)(yomo,...args))
       );
     },
     proc: (info,data,state)=>state,

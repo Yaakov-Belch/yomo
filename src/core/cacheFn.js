@@ -35,7 +35,6 @@ const cacheTrafo=createTransformer(
   }
 );
 
-
 const xPeek=(res,yomo,id,args,add)=>{
   let peeks;
   if(yomo.peek && (peeks=yomo.peek[id])){ process.nextTick(()=>{
@@ -78,7 +77,7 @@ export const cacheFnu=metaFn(([fn],yomo,args)=>{
   let res;
   const unsub=()=>{
     try { res && res.unsub && res.unsub(); }
-    catch(e) {console.log(e);}
+    catch(e) {console.log('cacheFn/unsub:',e);}
   };
   const get=()=>{
     unsub();
@@ -134,5 +133,8 @@ export const yomoRunner=(fn)=>
 export const yomoRun=(yomo,fn)=>
   autorun(()=>{
     try      { fn(); }
-    catch(e) { if(!isWaitX(e)) { console.log(e); } }
+    catch(e) { if(!isWaitX(e)) {
+      console.log('yomoRun:',e);
+      console.log(e.stack);
+    } }
   });
