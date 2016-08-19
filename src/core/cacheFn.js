@@ -58,10 +58,10 @@ const onOff=cacheFnu((yomo,id,action)=>{
   return { unsub:()=>yomo.dispatch({...action, onOff:-1}) }
 });
 let onOffCounter=1;
-export const onOffAction=(yomo,...args)=> {
+export const onOffActionShared=(yomo,...args)=> {
   onOff(yomo,0,...args); return true;
 };
-export const onOffActionUnique=(yomo,...args)=> {
+export const onOffAction=(yomo,...args)=> {
   onOff(yomo,onOffCounter++,...args); return true;
 };
 
