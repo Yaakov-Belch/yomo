@@ -14,7 +14,7 @@ const startClient=(info)=>{
   connect([type2,pipeId2,top1]);
 };
 const startSrv=(info)=>{
-  const [type,pipeId,top]=args;
+  const [type,pipeId,top]=info.args;
   setType(info,type); info.pipeId=pipeId
   serve(info,top);
 };
