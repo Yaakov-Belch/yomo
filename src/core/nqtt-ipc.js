@@ -72,6 +72,13 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     procChannel(rd2(channels,peerId,qid),data);
   });
 
+  // qidS (sending) <----> qidR (receiving)
+  // in order to allow two peers to connect both ways
+  // without clashing qid sequences, the client adds a
+  // star to his qidR (the server's qidS).  So, even when
+  // the same qid number is used on both sides, the keys
+  // will be different.
+
   const connectFn=(cSpec,recv)=>{
     const qid=nextQid();
     connect2(true,cSpec,'*'+qid,qid,recv);
@@ -96,10 +103,9 @@ export const mqttIpc=(ipcSpec,lookup)=>{
       const channel={info,ctrl};
       ok && wr2(channels,peerId,qidR,channel);
       ok && (server || online[peerId]) && startChannel(channel);
-      ok=false;
     });
     return client && (()=>{
-      srv && ok && send(peerId,['unsubscribe',myId,qidS]);
+      srv && send(peerId,['unsubscribe',myId,qidS]);
       ok=false;
       stopChannel(del2(channels,peerId,qidR));
     });
@@ -107,6 +113,9 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   defCmd('unsubscribe',([__,peerId,qid)=>{
     stopChannel(del2(channels,peerId,qid));
   });
+
+  // Clients initiate connections and reconnect after connection
+  // loss.  Servers just forget about dropped connections.
 
   const peerOnline=(peerId)=> {
     const x=channels[peerId]||{};
