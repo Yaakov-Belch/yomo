@@ -10,11 +10,15 @@ export const mqttIpc=(ipcSpec,lookup)=>{
   }
   const {ipcUrl,myId}=ipcSpec;
 
-  const online={};   // Which servers are active now?
-  const mySubs={};   // My subscriptions with sub messages.
-  const peerSubs={}; // Unsub handlers for peer subscriptions.
-  const cmds={};     // ipc commands
+  const online={};    // Which peers are online?
+  const channels={};  // current channels
+  const cmds={};      // ipc commands
   const defCmd=(cmd,handler)=>cmds[cmd]=handler;
+
+  const stopAllChannels=()=>{
+    forEach2(channels,channel=>stopChannel(channel));
+    for(let k in channels) { delete channels[k]; }
+  };
 
   let qidCounter=0;  // Message channel id:
   const nextQid=()=>(++qidCounter).toString(36);
@@ -26,10 +30,8 @@ export const mqttIpc=(ipcSpec,lookup)=>{
 
   const will={topic:okTopic,payload:'',retain,qos};
   const client=mqtt.connect(ipcUrl,{will});
-
   const unsub=()=>{
-    forEach2(mySubs,  (channel)=>stopChannel(channel));
-    forEach2(peerSubs,(channel)=>stopChannel(channel));
+    stopAllChannels();
     client.publish(okTopic,'',{retain,qos}); // like will
     client.end();
   };
@@ -39,6 +41,10 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     client.subscribe(okAll,{qos});
     client.publish(okTopic,'ok',{retain,qos});
   });
+  client.on('reconnect', stopAllChannels);
+  client.on('close',     stopAllChannels);
+  client.on('offline',   stopAllChannels);
+  client.on('error', (error)=>console.log(error));
 
   const send=(peerId,msg)=>{ try {
     //// console.log(`${myId}==>${peerId}`,msg); ////
@@ -46,114 +52,84 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     client.publish(`data/${peerId}`,msg,{qos});
   } catch(e){ console.log('failed send:',peerId, msg); }};
 
-  const subscribe=(peerId,qid,channel)=>{
-    wr2(mySubs,peerId,qid,channel);
-    if(online[peerId]) { startChannel(channel); }
-  };
-  const unsubscribe=(peerId,qid,done,confirmed)=>{
-    if(stopChannel(rd2(mySubs,peerId,qid),done,confirmed)) {
-      del2(mySubs,peerId,qid);
-    }
-  };
-
-  const peerSubscribe=(peerId,qid,channel)=>{
-    peerUnSubscribe(peerId,qid);
-    wr2(peerSubs,peerId,qid,channel);
-    startChannel(channel);
-  };
-  const peerUnSubscribe=(peerId,qid)=>{
-    const channel=del2(peerSubs,peerId,qid);
-    stopChannel(channel);
-  };
-
-  const connectFn=(cSpec,recv)=>{
-    const {peerId,fname,args}=cSpec;
-    const qid=nextQid();
-    let ok=true;
-    lookup(false,cSpec,({yomo,ctrl,fnDef})=>{
-      const connect=(args2)=>
-        send(peerId,['subscribe',myId,qid,fname,args2]);
-      const sendData=(data)=>
-        send(peerId,['cData',myId,qid,data]);
-      const info={
-        yomo, fname,args, fnDef,recv,
-        connect,sendData,
-        peerId, ipcSpec, client:true,
-      };
-      const channel={info,ctrl};
-      ok && subscribe(peerId,qid,channel);
-    });
-    return ()=>{
-      ok=false;
-      unsubscribe(peerId,qid,true,false);
-      send(peerId,['unsubscribe',myId,qid]);
-    };
-  };
-
   const startChannel=(channel)=>{
-    if(1) {
-      const {peerId,fname,args}=channel.info;
-    }
-    // On the client:
-    // If the peer is now offline but gets online later,
-    // startChannel will be called automatically.
-    if(channel && online[channel.info.peerId]) {
-      const {ctrl:{start},info,active}=channel;
-      if(active) { stopChannel(channel); }
-      channel.active=true;
-      channel.state=start(info);
-      // ensure to call info.connect?(args) synchronously!
-    }
+    const {ctrl:{start},info}=channel;
+    channel.active=true;
+    channel.state=start(info);
+      // call info.connect?(args) synchronously!
   };
-
   const procChannel=(channel,data)=>{ if(channel) {
     const {active,ctrl:{proc},info,state}=channel;
     if(active) { channel.state=proc(info,data,state); }
   }};
-
-  const stopChannel=(channel,done,confirmed)=>{ if(channel) {
+  const stopChannel=(channel)=>{ if(channel) {
     const {active,ctrl:{stop},info,state}=channel;
     if(active) { stop(info,state); }
     channel.state=channel.active=undefined;
-
-    if(done) { channel.done=true; }
-    if(channel.done && (confirmed || !online[info.peerId])) {
-      return true; // ok to delete the channel.
-    }
-    // a spurious confirmUnsub triggers a new startChannel:
-    if(confirmed && !channel.done) { startChannel(channel); }
-    return false; // don't delete the channel.
   }};
 
-  defCmd('subscribe',([__,peerId,qid,fname,args])=>{
-    lookup(true,{peerId,fname,args},({yomo,ctrl,fnDef})=>{
+  defCmd('data',([__,peerId,qid,data])=> {
+    procChannel(rd2(channels,peerId,qid),data);
+  });
+
+  // qidS (sending) <----> qidR (receiving)
+  // in order to allow two peers to connect both ways
+  // without clashing qid sequences, the client adds a
+  // star to his qidR (the server's qidS).  So, even when
+  // the same qid number is used on both sides, the keys
+  // will be different.
+
+  const connectFn=(cSpec,recv)=>{
+    const qid=nextQid();
+    return connect2(true,cSpec,'*'+qid,qid,recv);
+  };
+  defCmd('connect',([__,peerId,qidR,qidS,fname,args])=>{
+    connect2(false,{peerId,fname,args},qidS,qidR,null);
+  });
+  const connect2=(client,cSpec,qidS,qidR,recv)=>{
+    const {peerId,fname,args}=cSpec;
+    const server=!client;
+    let ok=true;
+    lookup(server,cSpec, ({yomo,ctrl,fnDef})=>{
+      const connect=(args2)=>
+        send(peerId,['connect',myId,qidS,qidR,fname,args2]);
       const sendData=(data)=>
-        send(peerId,['sData',myId,qid,data]);
+        send(peerId,['data',myId,qidS,data]);
       const info={
-        yomo, fname,args, fnDef, sendData,
-        peerId, ipcSpec, server:true
+        yomo, fname,args, fnDef,
+        connect, recv, sendData,
+        peerId, ipcSpec, client, server,
       };
       const channel={info,ctrl};
-      peerSubscribe(peerId,qid,channel);
+      ok && wr2(channels,peerId,qidR,channel);
+      ok && (server || online[peerId]) && startChannel(channel);
     });
-  });
+    return client && (()=>{
+      ok=false;
+      stopChannel(del2(channels,peerId,qidR));
+      send(peerId,['unsubscribe',myId,qidS]);
+    });
+  };
   defCmd('unsubscribe',([__,peerId,qid])=>{
-    peerUnSubscribe(peerId,qid);
-    send(peerId,['confirmUnsub',myId,qid]);
+    stopChannel(del2(channels,peerId,qid));
   });
-  defCmd('confirmUnsub',([__,peerId,qid])=>{
-    unsubscribe(peerId,qid,false,true);
-  });
-  defCmd('sData',([__,peerId,qid,data])=> {
-    const channel=rd2(mySubs,peerId,qid);
-    if(!channel) {console.log('no channel1 for:',peerId,qid);}
-    procChannel(channel,data);
-  });
-  defCmd('cData',([__,peerId,qid,data])=> {
-    const channel=rd2(peerSubs,peerId,qid);
-    if(!channel) {console.log('no channel2 for:',peerId,qid);}
-    procChannel(channel,data);
-  });
+
+  // Clients initiate connections and reconnect after connection
+  // loss.  Servers just forget about dropped connections.
+
+  const peerOnline=(peerId)=> {
+    const x=channels[peerId]||{};
+    for(let qid in x){ startChannel(x[qid]); }
+  };
+  const peerOffline=(peerId)=>{
+    const x=channels[peerId]||{};
+    for(let qid in x){
+      const channel=x[qid];
+      stopChannel(channel);
+      if(channel.info.server) { delete x[qid]; }
+    }
+    if(emptyObj(x)) { delete channels[peerId]; }
+  };
 
   client.on('message',(topic,msg)=>{
     //// console.log(`@${myId} ${topic}: ${msg+''}`); ////
@@ -168,20 +144,15 @@ export const mqttIpc=(ipcSpec,lookup)=>{
     const peerId=afterPrefix('online/',topic);
     if(peerId){
       if(msg.toString()!=='') { // start-up: (re)subscribe
-        if(!online[peerId]) { // un-bounce ok messages
+        if(!online[peerId]) {   // un-bounce ok messages
           online[peerId]=true;
-          const x=mySubs[peerId]||{};
-          for(let qid in x){ startChannel(x[qid]); }
+          peerOnline(peerId);
         }
-      } else {                   // shut-down
-        delete online[peerId];
-        const x=peerSubs[peerId]; delete peerSubs[peerId];
-        for(let qid in x){ stopChannel(x[qid]); }
-        const y=mySubs[peerId];
-        for(let qid in y){
-          if(stopChannel(y[qid],false,false)) { delete y[qid]; }
+      } else {                  // shut-down
+        if(online[peerId]) {
+          delete online[peerId];
+          peerOffline(peerId);
         }
-        if(emptyObj(y)) { delete mySubs[peerId]; }
       }
     } else { console.log('unknown topic:', topic, msg+''); }
   });
