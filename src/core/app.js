@@ -3,7 +3,9 @@ const {observable, asReference, useStrict}=mobx;
 import {yomoRun} from './cacheFn.js';
 useStrict(true);
 
-const ok={reducer:1,ViewException:1,run:1,render:1,View:1};
+const ok={
+  reducer:1,ViewException:1,run:1,render:1,View:1,css:1
+};
 export const yomoApp0=(spec,curry)=> {
   if(curry) {
     return (spec2,curry2)=> yomoApp0({...spec,...spec2},curry2);
@@ -25,6 +27,6 @@ export const yomoApp0=(spec,curry)=> {
   yomo.dispatch({type:'@@redux/INIT'});
 
   run    && run.forEach(fn=>yomoRun(yomo,()=>fn(yomo)));
-  render && render(spec,yomo);
+  render && render(spec,yomo,spec);
 };
 

@@ -10,6 +10,10 @@ import {ipcBridge} from './core/bridge.js';
 const yomoBridge=(bSpec,ipcSpec)=>
   ipcBridge(mqttIpc,bSpec,ipcSpec);
 
+import {
+  WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon
+} from './util/icons.js';
+
 export {
   yomoBridge,              // review and approve
   linkPipes,pipes,getPipe, // review, approve or sep package
@@ -19,5 +23,8 @@ export {
   reuse,combineReducers,     // release as separate package
   getBuffer,getText,getJSON, // release as separate package
   delay,ticks,               // release as separate package
+
+  // release as separate package:
+  WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon,
 };
 
