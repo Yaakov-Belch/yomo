@@ -1,6 +1,5 @@
 import React       from 'react';
 import ReactDOM    from 'react-dom';
-import Loader      from 'react-loader';
 import withContext from 'recompose/withContext';
 import getContext  from 'recompose/getContext';
 import {observer}  from 'mobx-react';
