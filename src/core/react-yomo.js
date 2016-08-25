@@ -22,30 +22,18 @@ export const yomoView=(View,options)=>observer(getContext(
   try { return View(props); }
   catch(exception) {
     const waiting=isWaitX(exception);
-    const V=props.yomo.ViewException || ViewException;
-    return <V {...{waiting,exception,options}}/>;
+    const V=props.yomo.ViewException || null;
+    return V && <V {...{waiting,exception,options}}/>;
 }}));
 
-export const ViewException=yomoView(({waiting,exception})=> {
-  if(waiting) {
-    const speed=waiting>0? 1:0;
-    return(
-      <span style={{
-        position:'relative',display:'block',height:'2em'
-      }}>
-        <Loader options={{scale:0.8,speed}}/>
-      </span>
-    );
-  } else {
-    console.log(exception);
-    return null;
-  }
-});
-
 export const yomoReact={
-  render: ({View,domId},yomo)=>
-    View && ReactDOM.render(
-      <Provider yomo={yomo}><View/></Provider>,
+  render: ({View,domId},yomo,spec)=>{
+    const css=spec.css || null;
+    const CSS=css &&
+      <style media="screen" type="text/css">{css}</style>;
+    return View && ReactDOM.render(
+      <Provider yomo={yomo}>{CSS}<View/></Provider>,
       document.getElementById(domId || 'root')
-    ),
+    )
+  }
 };
