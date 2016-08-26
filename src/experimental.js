@@ -1,9 +1,10 @@
 import {cacheSlow,onOffAction,onOffActionShared,}
   from './core/cacheFn.js';
-import {reuse,combineReducers} from './util/reuse.js';
 import {linkPipes,pipes,getPipe} from './core/pipes.js';
+import {timeNow} from './core/time.js';
+import {reuse,combineReducers} from './util/reuse.js';
 import {getBuffer,getText,getJSON} from './util/getx.js';
-import {delay,ticks} from './util/time.js';
+import {delay,ticks} from './util/time2.js';
 
 import {mqttIpc} from './core/mqtt-ipc';
 import {ipcBridge} from './core/bridge.js';
@@ -19,6 +20,8 @@ export {
   linkPipes,pipes,getPipe, // review, approve or sep package
   onOffAction,onOffActionShared, // review and approve
   cacheSlow,               // review API, improve implementation
+
+  timeNow,                 // review, select and approve
 
   reuse,combineReducers,     // release as separate package
   getBuffer,getText,getJSON, // release as separate package
