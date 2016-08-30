@@ -31,7 +31,7 @@ export const yomoClock=metaFn((__,yomo,[t0,dt,skip])=>{
 export const dispatchAfter=cacheFn((yomo,t0,action,addTime)=>{
   if(yomoClock(yomo,t0)>0) {
     if(addTime) { action={...action,time:timeNow()}; }
-    yomo.dispatch(action);
+    process.nextTick(()=>yomo.dispatch(action));
   }
   return true;
 });
