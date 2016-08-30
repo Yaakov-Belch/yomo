@@ -83,7 +83,7 @@ export const ViewException=yomoView(({waiting,exception})=> {
   if(waiting) {
     return waiting>0? <WaitIcon {...p}/>:<DelayIcon {...p}/>;
   } else {
-    console.log(exception);
+    console.log(exception, exception.stack);
     return <UserErrorIcon {...p}/>;
   }
 });
