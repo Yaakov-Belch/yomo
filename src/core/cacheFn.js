@@ -9,7 +9,7 @@ export const metaFn=(fnTrafo)=>(...spec)=>{
   const id=nextId++;
   const fn=(yomo,...args)=> {
     const key=canon.stringify(args);
-    const cache=yomo.cache[id]=yomo.cache[id] || {};
+    const cache=yomo.yomoCache[id]=yomo.yomoCache[id] || {};
     const data=cache[key]=cache[key] ||{
       cache, key, res:fnTrafo(spec,yomo,args),
     };

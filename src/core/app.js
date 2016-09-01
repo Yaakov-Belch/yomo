@@ -17,7 +17,7 @@ export const yomoApp0=(spec,curry)=> {
 
   const state=observable(asReference(undefined));
   const yomo=()=>state.get();
-  yomo.cache={};
+  yomo.yomoCache={};
   yomo.ViewException=ViewException;
 
   yomo.dispatchSoon=(action)=>
