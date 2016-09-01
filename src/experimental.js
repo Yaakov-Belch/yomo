@@ -1,4 +1,4 @@
-import {cacheSlow,onOffAction,onOffActionShared,}
+import {cacheSlow,onOffAction,onOffActionShared}
   from './core/cacheFn.js';
 import {linkPipes,pipes,getPipe} from './core/pipes.js';
 import {timeNow} from './core/time.js';
