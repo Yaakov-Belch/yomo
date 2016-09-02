@@ -27,12 +27,16 @@ export const yomoView=(View,options)=>observer(getContext(
 
 export const yomoReact={
   render: ({View,domId},yomo,spec)=>{
-    const css=spec.css || null;
-    const CSS=css &&
-      <style media="screen" type="text/css">{css}</style>;
     return View && ReactDOM.render(
-      <Provider yomo={yomo}>{CSS}<View/></Provider>,
+      <Provider yomo={yomo}><View/></Provider>,
       document.getElementById(domId || 'root')
     )
   }
 };
+
+export const yomoRender=(yomo,View,domId)=>
+  ReactDOM.render(
+    <Provider yomo={yomo}><View/></Provider>,
+    document.getElementById(domId || 'root')
+  );
+

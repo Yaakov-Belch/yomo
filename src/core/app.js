@@ -1,10 +1,9 @@
 import mobx from 'mobx';
 const {observable, asReference, useStrict}=mobx;
 import {yomoRun} from './cacheFn.js';
-useStrict(true);
 
 const ok={
-  reducer:1,ViewException:1,run:1,render:1,View:1,css:1
+  reducer:1,ViewException:1,run:1,render:1,View:1
 };
 export const yomoApp0=(spec,curry)=> {
   if(curry) {

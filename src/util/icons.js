@@ -1,7 +1,7 @@
 import React from 'react';
 import { yomoView } from '../core/react-yomo.js';
 
-export const iconCss=
+const css=
 `.yomoSpin1s {
   -moz-animation: yomoSpin1s 1s infinite linear;
   -webkit-animation: yomoSpin1s 1s infinite linear;
@@ -30,12 +30,16 @@ const strokes={
 const ySpin='yomoSpin1s';
 
 export const WaitIcon=yomoView(({style,size})=>
-  <svg {...{style,className:ySpin,width:size||s0,viewBox}}><g>
-    <path {...strokes} stroke="#888888" fill="none"
-      d="M 12 2 a 10 10 0 1 0 10 10"
-    />
-  </g></svg>
+  <span>
+    <style media="screen" type="text/css">{css}</style>
+    <svg {...{style,className:ySpin,width:size||s0,viewBox}}><g>
+      <path {...strokes} stroke="#888888" fill="none"
+        d="M 12 2 a 10 10 0 1 0 10 10"
+      />
+    </g></svg>
+  </span>
 );
+
 export const DelayIcon=yomoView(({style,size})=>
   <svg {...{style,width:size||s0,viewBox}}><g>
     <path {...strokes} stroke="#888888" fill="none"
@@ -88,5 +92,5 @@ export const ViewException=yomoView(({waiting,exception})=> {
   }
 });
 
-export const yomoIcons={css:iconCss, ViewException};
+export const yomoIcons={ViewException};
  
