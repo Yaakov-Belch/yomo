@@ -1,4 +1,4 @@
-import {cacheSlow,onOffAction,onOffActionShared}
+import {cacheSlow,onOffAction,onOffActionShared,yomoRun}
   from './core/cacheFn.js';
 import {linkPipes,pipes,getPipe} from './core/pipes.js';
 import {timeNow} from './core/time.js';
@@ -20,7 +20,7 @@ export {
   linkPipes,pipes,getPipe, // review, approve or sep package
   onOffAction,onOffActionShared, // review and approve
   cacheSlow,               // review API, improve implementation
-
+  yomoRun,                 // review and approve
   timeNow,                 // review, select and approve
 
   reuse,combineReducers,     // release as separate package

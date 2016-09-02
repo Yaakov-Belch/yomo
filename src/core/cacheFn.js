@@ -99,7 +99,7 @@ export const cacheSlow=metaFn(([spec],yomo,args)=>{
 
 export const yomoAuditor=metaFn(([fn],yomo,args)=>{
   const res=observable(true);
-  res.unsub=yomoRun(yomo,()=>{
+  res.unsub=yomoRun(yomo,false,()=>{
     const action=fn(yomo,...args);
     if(action) { yomo.dispatch(action); }
   });
@@ -108,9 +108,9 @@ export const yomoAuditor=metaFn(([fn],yomo,args)=>{
 export const yomoRunner=(fn)=>
   yomoAuditor((...args)=>{fn(...args); return 0;});
 
-export const yomoRun=(yomo,fn)=>
+export const yomoRun=(yomo,key,fn)=>
   autorun(()=>{
-    try      { fn(); }
+    try      { fn(yomo); }
     catch(e) { if(!isWaitX(e)) {
       console.log('yomoRun:',e);
       console.log(e.stack);

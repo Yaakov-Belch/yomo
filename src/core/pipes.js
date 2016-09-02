@@ -37,7 +37,7 @@ const setType=(info,type)=>{
 const serve=(info,top)=>{
   const {yomo,done,wantData,wantAcc,pipeId,sendData}=info;
   done && done();
-  info.done=yomoRun(yomo,()=>{
+  info.done=yomoRun(yomo,false,()=>{
     const p=getPipe(yomo,pipeId);
 
     let msg;

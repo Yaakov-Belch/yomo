@@ -22,7 +22,7 @@ const noCtrl={
     start: (info)=>{
       const {yomo,sendData,fnDef,args}=info;
       //++ forward exceptions; catch incorrect fnDef outside
-      return yomoRun(yomo,
+      return yomoRun(yomo,false,
         ()=> sendData((fnDef.fn||fnDef)(yomo,...args))
       );
     },
@@ -51,7 +51,7 @@ const connBridge=metaFn(([cfn,ipcSpec],yomo,[fnSpec,...args])=>{
   const res=observable(asReference(v0));
   const recv=action(data=>res.set(data));
   let cDone;
-  const done=yomoRun(yomo,()=>{
+  const done=yomoRun(yomo,false,()=>{
     cDone && cDone();
     const spec=ipcSpec || fnSpec.ipcSpec;
     const conn=spec && cfn(yomo, spec);

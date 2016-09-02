@@ -1,15 +1,14 @@
 import mobx from 'mobx';
 const {observable, asReference, useStrict}=mobx;
 import {yomoRun} from './cacheFn.js';
+import {yomoRender} from './react-yomo.js';
 
-const ok={
-  reducer:1,run:1,render:1,View:1
-};
-export const yomoApp0=(spec,curry)=> {
+const ok={ reducer:1,View:1 };
+export const yomoApp=(spec,curry)=> {
   if(curry) {
     return (spec2,curry2)=> yomoApp0({...spec,...spec2},curry2);
   }
-  const {reducer,run,render}=spec;
+  const {reducer,View,domId}=spec;
   for(let k in spec) {if(!ok[k]){
     console.log(`Warning in yomoApp --- unknown key: ${k}`);
   }}
@@ -24,7 +23,7 @@ export const yomoApp0=(spec,curry)=> {
     state.set(reducer(state.get(),action)));
   yomo.dispatch({type:'@@redux/INIT'});
 
-  run    && run.forEach(fn=>yomoRun(yomo,()=>fn(yomo)));
-  render && render(spec,yomo,spec);
+  View && yomoRender(yomo,View,domId);
+  return yomo;
 };
 

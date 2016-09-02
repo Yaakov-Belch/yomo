@@ -1,11 +1,10 @@
-import {yomoApp0} from './core/app.js';
-import {yomoReact,yomoView} from './core/react-yomo.js';
+import {yomoApp} from './core/app.js';
+import {yomoView} from './core/react-yomo.js';
 import {cacheFn,cacheAsync,yomoAuditor,yomoRunner}
   from './core/cacheFn.js';
 import {yomoClock,dispatchAfter,waitUntil}
   from './core/time.js';
 
-const yomoApp=yomoApp0({...yomoReact},true);
 export {
   yomoApp,yomoView,
   cacheFn,cacheAsync,

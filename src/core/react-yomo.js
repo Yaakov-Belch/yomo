@@ -34,16 +34,7 @@ export const ViewException=yomoView(({waiting,exception})=> {
   }
 });
 
-export const yomoReact={
-  render: ({View,domId},yomo,spec)=>{
-    return View && ReactDOM.render(
-      <Provider yomo={yomo}><View/></Provider>,
-      document.getElementById(domId || 'root')
-    )
-  }
-};
-
-export const yomoRender=(yomo,View,domId)=>
+export const yomoRender=(yomo,View,domId='root')=>
   ReactDOM.render(
     <Provider yomo={yomo}><View/></Provider>,
     document.getElementById(domId || 'root')
