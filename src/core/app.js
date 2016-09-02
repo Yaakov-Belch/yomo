@@ -4,10 +4,7 @@ import {yomoRun} from './cacheFn.js';
 import {yomoRender} from './react-yomo.js';
 
 const ok={ reducer:1,View:1 };
-export const yomoApp=(spec,curry)=> {
-  if(curry) {
-    return (spec2,curry2)=> yomoApp0({...spec,...spec2},curry2);
-  }
+export const yomoApp=(spec)=> {
   const {reducer,View,domId}=spec;
   for(let k in spec) {if(!ok[k]){
     console.log(`Warning in yomoApp --- unknown key: ${k}`);
