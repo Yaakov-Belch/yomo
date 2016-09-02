@@ -108,7 +108,7 @@ export const yomoAuditor=metaFn(([fn],yomo,args)=>{
 export const yomoRunner=(fn)=>
   yomoAuditor((...args)=>{fn(...args); return 0;});
 
-export const yomoRun=(yomo,key,fn)=>
+const yomoRun0=(yomo,fn)=>
   autorun(()=>{
     try      { fn(yomo); }
     catch(e) { if(!isWaitX(e)) {
@@ -116,3 +116,21 @@ export const yomoRun=(yomo,key,fn)=>
       console.log(e.stack);
     } }
   });
+
+export const yomoRun=(yomo,key,fn)=>{
+  if(!key) { return yomoRun0(yomo,fn); }
+  const [oldFn,oldStop]=yomo.yomoRuns[key] || [];
+  if(oldFn===fn) { return; }
+  if(oldFn) {
+    oldStop();
+    fn && console.log('double yomoRun for',key);
+  }
+  if(fn) { yomo.yomoRuns[key]=[fn,yomoRun0(yomo,fn)]; }
+  else   { delete yomo.yomoRuns[key]; }
+  return ()=>{
+    const [oldFn,oldStop]=yomo.yomoRuns[key] || [];
+    if(fn!==oldFn){console.log('yomoRun stop too late',key); }
+    else if(oldStop) { oldStop(); delete yomo.yomoRuns[key]; }
+  };
+}
+

@@ -13,6 +13,7 @@ export const yomoApp=(spec)=> {
   const state=observable(asReference(undefined));
   const yomo=()=>state.get();
   yomo.yomoCache={};
+  yomo.yomoRuns={};
 
   yomo.dispatchSoon=(action)=>
     process.nextTick(yomo.dispatch,action);
