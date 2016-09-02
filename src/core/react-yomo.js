@@ -3,16 +3,36 @@ import ReactDOM    from 'react-dom';
 import withContext from 'recompose/withContext';
 import getContext  from 'recompose/getContext';
 import {observer}  from 'mobx-react';
+import {newYomo}   from './new-yomo.js';
 import {isWaitX}   from '../util/my-exceptions.js';
+
+export const attachReduxStore=(yomo,store)=>{
+  if(yomo.state || yomo.dispatch) {
+    console.log('attachReduxStore: Yomo already attached.');
+    return;
+  }
+  const redux=yomo.yomoState('redux');
+  const update=()=>redux.write(store.getState());
+  store.subscribe(update); update();
+  yomo.state=()=>redux.get();
+  yomo.dispatch=(action)=>store.dispatch(action);
+  yomo.dispatchSoon=(action)=>
+    process.nextTick(yomo.dispatch,action);
+};
 
 export const Provider = withContext(
   {
     yomo:  React.PropTypes.object,
     store: React.PropTypes.object
   },
-  (props)=>({yomo:props.yomo, store:props.store})
+  (props)=>{
+    let {yomo,store}=props;
+    yomo=yomo||newYomo();
+    store && attachReduxStore(yomo,store);
+    return {yomo,store};
+  }
 )(
-  ({children})=><div>{children}</div>
+  ({children})=>React.Children.only(children)
 );
 
 export const yomoView=(View,options)=>observer(getContext(

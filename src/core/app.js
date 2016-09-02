@@ -1,26 +1,28 @@
-import mobx from 'mobx';
-const {observable, asReference, useStrict}=mobx;
-import {yomoRun} from './cacheFn.js';
+import {newYomo}    from './new-yomo.js';
 import {yomoRender} from './react-yomo.js';
 
-const ok={ reducer:1,View:1 };
-export const yomoApp=(spec)=> {
+export const attachReducer=(yomo,reducer)=>{
+  if(yomo.state || yomo.dispatch) {
+    console.log('attachReducer: Yomo already attached.');
+    return;
+  }
+  const redux=yomo.yomoState('redux');
+  yomo.state=()=>redux.get();
+  yomo.dispatch=(action)=>r.write(reducer(r.value,action));
+  yomo.dispatchSoon=(action)=>
+    process.nextTick(yomo.dispatch,action);
+  yomo.dispatch({type:'@@redux/INIT'});
+};
+
+const ok={reducer:true,View:true,domId:true};
+export const yomoApp=(spec)=>{
+  const yomo=newYomo();
   const {reducer,View,domId}=spec;
   for(let k in spec) {if(!ok[k]){
     console.log(`Warning in yomoApp --- unknown key: ${k}`);
   }}
-
-  const state=observable(asReference(undefined));
-  const yomo={
-    yomoCache:{}, yomoRuns:{},
-    state: ()=>state.get(),
-    dispatch: mobx.action((action)=>
-      state.set(reducer(state.get(),action))),
-    dispatchSoon: (action)=>
-      process.nextTick(yomo.dispatch,action),
-  };
-  yomo.dispatch({type:'@@redux/INIT'});
+  if(reducer) { attachReducer(yomo,reducer); }
+  else { throw new Error('yomoApp requires a reducer'); }
   View && yomoRender(yomo,View,domId);
   return yomo;
-};
-
+}
