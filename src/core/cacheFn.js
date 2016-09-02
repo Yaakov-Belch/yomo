@@ -9,7 +9,7 @@ export const metaFn=(fnTrafo)=>(...spec)=>{
   const id=nextId++;
   const fn=(yomo,...args)=> {
     const key=canon.stringify(args);
-    const cache=yomo.cache[id]=yomo.cache[id] || {};
+    const cache=yomo.yomoCache[id]=yomo.yomoCache[id] || {};
     const data=cache[key]=cache[key] ||{
       cache, key, res:fnTrafo(spec,yomo,args),
     };
@@ -99,7 +99,7 @@ export const cacheSlow=metaFn(([spec],yomo,args)=>{
 
 export const yomoAuditor=metaFn(([fn],yomo,args)=>{
   const res=observable(true);
-  res.unsub=yomoRun(yomo,()=>{
+  res.unsub=yomoRun(yomo,false,()=>{
     const action=fn(yomo,...args);
     if(action) { yomo.dispatch(action); }
   });
@@ -108,11 +108,29 @@ export const yomoAuditor=metaFn(([fn],yomo,args)=>{
 export const yomoRunner=(fn)=>
   yomoAuditor((...args)=>{fn(...args); return 0;});
 
-export const yomoRun=(yomo,fn)=>
+const yomoRun0=(yomo,fn)=>
   autorun(()=>{
-    try      { fn(); }
+    try      { fn(yomo); }
     catch(e) { if(!isWaitX(e)) {
       console.log('yomoRun:',e);
       console.log(e.stack);
     } }
   });
+
+export const yomoRun=(yomo,key,fn)=>{
+  if(!key) { return yomoRun0(yomo,fn); }
+  const [oldFn,oldStop]=yomo.yomoRuns[key] || [];
+  if(oldFn===fn) { return; }
+  if(oldFn) {
+    oldStop();
+    fn && console.log('double yomoRun for',key);
+  }
+  if(fn) { yomo.yomoRuns[key]=[fn,yomoRun0(yomo,fn)]; }
+  else   { delete yomo.yomoRuns[key]; }
+  return ()=>{
+    const [oldFn,oldStop]=yomo.yomoRuns[key] || [];
+    if(fn!==oldFn){console.log('yomoRun stop too late',key); }
+    else if(oldStop) { oldStop(); delete yomo.yomoRuns[key]; }
+  };
+}
+

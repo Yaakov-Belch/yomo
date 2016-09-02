@@ -37,7 +37,7 @@ const setType=(info,type)=>{
 const serve=(info,top)=>{
   const {yomo,done,wantData,wantAcc,pipeId,sendData}=info;
   done && done();
-  info.done=yomoRun(yomo,()=>{
+  info.done=yomoRun(yomo,false,()=>{
     const p=getPipe(yomo,pipeId);
 
     let msg;
@@ -79,7 +79,7 @@ const emptyPipe={bottom:0,data:[]};
 const topOf=({bottom,data})=>bottom+data.length;
 
 export const getPipe=cacheFn( (yomo,id)=>
-  yomo().pipes[id] || emptyPipe
+  yomo.state().pipes[id] || emptyPipe
 );
 
 export const pipes=(state={},action)=>{
