@@ -6,9 +6,9 @@ export const attachReducer=(yomo,reducer)=>{
     console.log('attachReducer: Yomo already attached.');
     return;
   }
-  const redux=yomo.yomoState('redux');
-  yomo.state=()=>redux.get();
-  yomo.dispatch=(action)=>r.write(reducer(r.value,action));
+  const r=yomo.yomoState('redux');
+  yomo.state=()=>r.get();
+  yomo.dispatch=(action)=>r.write(reducer(r.data,action));
   yomo.dispatchSoon=(action)=>
     process.nextTick(yomo.dispatch,action);
   yomo.dispatch({type:'@@redux/INIT'});

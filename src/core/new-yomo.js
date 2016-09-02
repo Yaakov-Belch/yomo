@@ -12,10 +12,10 @@ export const newYomo=()=>{
   return {yomoState, yomoCache:{}, yomoRuns:{}};
 }
 
-const rxValue=(value)=>{
-  const r=observable(asReference(value));
-  r.value=value;
-  r.write=mobx.action((vv)=>r.set(r.value=vv));
+const rxValue=(data)=>{
+  const r=observable(asReference(data));
+  r.data=data;
+  r.write=mobx.action((vv)=>r.set(r.data=vv));
   return r;
 }
 
