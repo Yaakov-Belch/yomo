@@ -7,7 +7,7 @@ import {isWaitX}   from '../util/my-exceptions.js';
 
 export const Provider = withContext(
   {
-    yomo:  React.PropTypes.func,
+    yomo:  React.PropTypes.object,
     store: React.PropTypes.object
   },
   (props)=>({yomo:props.yomo, store:props.store})
@@ -16,7 +16,7 @@ export const Provider = withContext(
 );
 
 export const yomoView=(View,options)=>observer(getContext(
-  { yomo: React.PropTypes.func }
+  { yomo: React.PropTypes.object }
 )((props)=>{
   try { return View(props); }
   catch(exception) {

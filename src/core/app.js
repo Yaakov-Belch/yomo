@@ -11,16 +11,15 @@ export const yomoApp=(spec)=> {
   }}
 
   const state=observable(asReference(undefined));
-  const yomo=()=>state.get();
-  yomo.yomoCache={};
-  yomo.yomoRuns={};
-
-  yomo.dispatchSoon=(action)=>
-    process.nextTick(yomo.dispatch,action);
-  yomo.dispatch=mobx.action((action)=>
-    state.set(reducer(state.get(),action)));
+  const yomo={
+    yomoCache:{}, yomoRuns:{},
+    state: ()=>state.get(),
+    dispatch: mobx.action((action)=>
+      state.set(reducer(state.get(),action))),
+    dispatchSoon: (action)=>
+      process.nextTick(yomo.dispatch,action),
+  };
   yomo.dispatch({type:'@@redux/INIT'});
-
   View && yomoRender(yomo,View,domId);
   return yomo;
 };

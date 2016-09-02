@@ -79,7 +79,7 @@ const emptyPipe={bottom:0,data:[]};
 const topOf=({bottom,data})=>bottom+data.length;
 
 export const getPipe=cacheFn( (yomo,id)=>
-  yomo().pipes[id] || emptyPipe
+  yomo.state().pipes[id] || emptyPipe
 );
 
 export const pipes=(state={},action)=>{
