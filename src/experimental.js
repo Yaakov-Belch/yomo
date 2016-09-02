@@ -5,6 +5,7 @@ import {timeNow} from './core/time.js';
 import {reuse,combineReducers} from './util/reuse.js';
 import {getBuffer,getText,getJSON} from './util/getx.js';
 import {delay,ticks} from './util/time2.js';
+import {persistRedux} from './util/persist.js';
 
 import {mqttIpc} from './core/mqtt-ipc';
 import {ipcBridge} from './core/bridge.js';
@@ -22,6 +23,7 @@ export {
   cacheSlow,               // review API, improve implementation
   yomoRun,                 // review and approve
   timeNow,                 // review, select and approve
+  persistRedux,            // review, approve
 
   reuse,combineReducers,     // release as separate package
   getBuffer,getText,getJSON, // release as separate package

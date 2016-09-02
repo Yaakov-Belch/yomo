@@ -7,6 +7,7 @@ export const attachReducer=(yomo,reducer)=>{
     return;
   }
   const r=yomo.yomoState('redux');
+  yomo.initState=(state)=>r.write(state);
   yomo.state=()=>r.get();
   yomo.dispatch=(action)=>r.write(reducer(r.data,action));
   yomo.dispatchSoon=(action)=>

@@ -14,6 +14,7 @@ export const attachReduxStore=(yomo,store)=>{
   const redux=yomo.yomoState('redux');
   const update=()=>redux.write(store.getState());
   store.subscribe(update); update();
+  yomo.initState=(state)=>r.write(state);
   yomo.state=()=>redux.get();
   yomo.dispatch=(action)=>store.dispatch(action);
   yomo.dispatchSoon=(action)=>
