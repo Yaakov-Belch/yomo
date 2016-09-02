@@ -13,10 +13,12 @@ const yomoBridge=(bSpec,ipcSpec)=>
   ipcBridge(mqttIpc,bSpec,ipcSpec);
 
 import {
+  Provider,
   WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon
 } from './core/react-yomo.js';
 
 export {
+  Provider,                // review and approve
   yomoBridge,              // review and approve
   linkPipes,pipes,getPipe, // review, approve or sep package
   onOffAction,onOffActionShared, // review and approve
