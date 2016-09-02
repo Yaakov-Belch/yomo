@@ -13,7 +13,7 @@ const yomoBridge=(bSpec,ipcSpec)=>
 
 import {
   WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon
-} from './util/icons.js';
+} from './core/react-yomo.js';
 
 export {
   yomoBridge,              // review and approve

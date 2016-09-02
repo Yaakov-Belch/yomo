@@ -3,13 +3,13 @@ const {observable, asReference, useStrict}=mobx;
 import {yomoRun} from './cacheFn.js';
 
 const ok={
-  reducer:1,ViewException:1,run:1,render:1,View:1
+  reducer:1,run:1,render:1,View:1
 };
 export const yomoApp0=(spec,curry)=> {
   if(curry) {
     return (spec2,curry2)=> yomoApp0({...spec,...spec2},curry2);
   }
-  const {reducer,ViewException,run,render}=spec;
+  const {reducer,run,render}=spec;
   for(let k in spec) {if(!ok[k]){
     console.log(`Warning in yomoApp --- unknown key: ${k}`);
   }}
@@ -17,7 +17,6 @@ export const yomoApp0=(spec,curry)=> {
   const state=observable(asReference(undefined));
   const yomo=()=>state.get();
   yomo.yomoCache={};
-  yomo.ViewException=ViewException;
 
   yomo.dispatchSoon=(action)=>
     process.nextTick(yomo.dispatch,action);

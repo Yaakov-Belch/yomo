@@ -4,9 +4,8 @@ import {cacheFn,cacheAsync,yomoAuditor,yomoRunner}
   from './core/cacheFn.js';
 import {yomoClock,dispatchAfter,waitUntil}
   from './core/time.js';
-import {yomoIcons} from './util/icons.js';
 
-const yomoApp=yomoApp0({...yomoReact,...yomoIcons},true);
+const yomoApp=yomoApp0({...yomoReact},true);
 export {
   yomoApp,yomoView,
   cacheFn,cacheAsync,
