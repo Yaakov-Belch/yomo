@@ -105,8 +105,6 @@ export const yomoAuditor=metaFn(([fn],yomo,args)=>{
   });
   return res;
 });
-export const yomoRunner=(fn)=>
-  yomoAuditor((...args)=>{fn(...args); return 0;});
 
 const yomoRun0=(yomo,fn)=>
   autorun(()=>{

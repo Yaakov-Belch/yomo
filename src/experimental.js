@@ -23,8 +23,8 @@ export {
   linkPipes,pipes,getPipe, // review, approve or sep package
   onOffAction,onOffActionShared, // review and approve
   cacheSlow,               // review API, improve implementation
-  yomoRun,                 // review and approve
-  timeNow,                 // review, select and approve
+  yomoRun,                 // functionality not clear
+  timeNow,                 // review, approve
   persistRedux,            // review, approve
 
   reuse,combineReducers,     // release as separate package
