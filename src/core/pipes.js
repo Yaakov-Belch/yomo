@@ -48,6 +48,7 @@ const serve=(info,top)=>{
         bottom=top;
       }
       msg={bottom,data};
+      top=topOf(msg);
     } else {
       msg={};
     }
@@ -92,7 +93,7 @@ const pipe=(state=emptyPipe,action)=>{
   let {bottom,data}=state; let top=bottom+data.length;
   const {bottom:b2,data:d2,value,acc}=action;
   if(d2) {
-    if(acc!==undefined && acc>top) {top=acc; data=[];}
+    if(acc!==undefined && acc>top) {bottom=top=acc; data=[];}
     if(b2>top) {
       console.log('skipped data2',state,action);
       data=[...data]; data[b2-bottom-1]=undefined; top=b2;

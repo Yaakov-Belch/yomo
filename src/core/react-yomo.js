@@ -45,15 +45,16 @@ export const yomoView=(View,options)=>observer(getContext(
     return <ViewException {...{waiting,exception,options}}/>;
 }}));
 
-export const ViewException=yomoView(({waiting,exception})=> {
-  const p={size:'2em'};
-  if(waiting) {
-    return waiting>0? <WaitIcon {...p}/>:<DelayIcon {...p}/>;
-  } else {
-    console.log(exception, exception.stack);
-    return <UserErrorIcon {...p}/>;
-  }
-});
+export const ViewException=
+  yomoView(({waiting,exception,options})=> {
+    const p={size:'1em',...options};
+    if(waiting) {
+      return waiting>0? <WaitIcon {...p}/>:<DelayIcon {...p}/>;
+    } else {
+      console.log(exception, exception.stack);
+      return <UserErrorIcon {...p}/>;
+    }
+  });
 
 export const yomoRender=(yomo,View,domId='root')=>
   ReactDOM.render(
