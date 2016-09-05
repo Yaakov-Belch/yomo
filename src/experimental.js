@@ -16,6 +16,7 @@ const yomoBridge=(bSpec,ipcSpec)=>
 import {
   WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon
 } from './core/react-yomo.js';
+import {connCheck} from './util/connCheck.js';
 
 export {
   yomoBridge,              // review and approve
@@ -31,6 +32,7 @@ export {
   reuse,combineReducers,     // release as separate package
   getBuffer,getText,getJSON, // release as separate package
   delay,ticks,               // release as separate package
+  connCheck,                 // separate package?
 
   // release as separate package:
   WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon,
