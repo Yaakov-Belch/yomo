@@ -90,7 +90,6 @@ export const pipes=(state={},action)=>{
 };
 
 const pipe=(state=emptyPipe,action)=>{
-  const old=state;
   let {bottom,data}=state; let top=bottom+data.length;
   const {bottom:b2,data:d2,value,acc}=action;
   if(d2) {
