@@ -47,7 +47,7 @@ export const yomoView=(View,options)=>observer(getContext(
 
 export const ViewException=
   yomoView(({waiting,exception,options})=> {
-    const p={size:'2em',...options};
+    const p={size:'1em',...options};
     if(waiting) {
       return waiting>0? <WaitIcon {...p}/>:<DelayIcon {...p}/>;
     } else {
