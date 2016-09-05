@@ -90,10 +90,11 @@ export const pipes=(state={},action)=>{
 };
 
 const pipe=(state=emptyPipe,action)=>{
+  const old=state;
   let {bottom,data}=state; let top=bottom+data.length;
   const {bottom:b2,data:d2,value,acc}=action;
   if(d2) {
-    if(acc!==undefined && acc>top) {top=acc; data=[];}
+    if(acc!==undefined && acc>top) {bottom=top=acc; data=[];}
     if(b2>top) {
       console.log('skipped data2',state,action);
       data=[...data]; data[b2-bottom-1]=undefined; top=b2;
@@ -107,5 +108,10 @@ const pipe=(state=emptyPipe,action)=>{
     data=data.slice(acc-bottom);
     bottom=acc;
   }
-  return reuse(state,{bottom,data});
+  const res=reuse(state,{bottom,data});
+  console.log('-------');
+  console.log(old);
+  console.log(action);
+  console.log(res);
+  return res;
 };
