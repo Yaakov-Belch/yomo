@@ -48,6 +48,7 @@ const serve=(info,top)=>{
         bottom=top;
       }
       msg={bottom,data};
+      top=topOf(msg);
     } else {
       msg={};
     }
