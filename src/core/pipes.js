@@ -108,10 +108,5 @@ const pipe=(state=emptyPipe,action)=>{
     data=data.slice(acc-bottom);
     bottom=acc;
   }
-  const res=reuse(state,{bottom,data});
-  console.log('-------');
-  console.log(old);
-  console.log(action);
-  console.log(res);
-  return res;
+  return reuse(state,{bottom,data});
 };
