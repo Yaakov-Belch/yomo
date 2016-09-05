@@ -1,7 +1,8 @@
-import {cacheSlow,onOffAction,onOffActionShared,yomoRun}
-  from './core/cacheFn.js';
+import {
+  cacheSlow,onOffAction,onOffActionShared,yomoRun,yomoAuditor
+} from './core/cacheFn.js';
 import {linkPipes,pipes,getPipe} from './core/pipes.js';
-import {timeNow} from './core/time.js';
+import {dispatchAfter,timeNow} from './core/time.js';
 import {reuse,combineReducers} from './util/reuse.js';
 import {getBuffer,getText,getJSON} from './util/getx.js';
 import {delay,ticks} from './util/time2.js';
@@ -13,17 +14,17 @@ const yomoBridge=(bSpec,ipcSpec)=>
   ipcBridge(mqttIpc,bSpec,ipcSpec);
 
 import {
-  Provider,
   WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon
 } from './core/react-yomo.js';
 
 export {
-  Provider,                // review and approve
   yomoBridge,              // review and approve
   linkPipes,pipes,getPipe, // review, approve or sep package
   onOffAction,onOffActionShared, // review and approve
   cacheSlow,               // review API, improve implementation
+  yomoAuditor,             // API changes with yomo components
   yomoRun,                 // functionality not clear
+  dispatchAfter,           // API changes with yomo components
   timeNow,                 // review, approve
   persistRedux,            // review, approve
 
