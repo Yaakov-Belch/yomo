@@ -8,6 +8,7 @@
     "url": "git+https://github.com/Yaakov-Belch/yomo.git"
   },
   "keywords": [
+    "Yomo",
     "React",
     "Redux",
     "Mobx",
