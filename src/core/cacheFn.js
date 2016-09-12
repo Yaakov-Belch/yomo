@@ -1,6 +1,6 @@
 import mobx from 'mobx';
 const{observable,asReference,createTransformer,autorun}=mobx;
-import canon from 'canon';
+import {indexKey} from './indexKey.js';
 import {wrapEx,unwrapEx,isWaitX,vWait,vDelay}
   from '../util/my-exceptions.js';
 
@@ -8,7 +8,7 @@ let nextId=1;
 export const metaFn=(fnTrafo)=>(...spec)=>{
   const id=nextId++;
   const fn=(yomo,...args)=> {
-    const key=canon.stringify(args);
+    const key=indexKey(args);
     const cache=yomo.yomoCache[id]=yomo.yomoCache[id] || {};
     const data=cache[key]=cache[key] ||{
       cache, key, res:fnTrafo(spec,yomo,args),
