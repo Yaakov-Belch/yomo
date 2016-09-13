@@ -1,6 +1,6 @@
 {
   "name": "yomo",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Yomo: peer-to-peer redux on client and server",
   "main": "v1",
   "repository": {
