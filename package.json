@@ -8,6 +8,7 @@
     "url": "git+https://github.com/Yaakov-Belch/yomo.git"
   },
   "keywords": [
+    "Yomo",
     "React",
     "Redux",
     "Mobx",
@@ -46,7 +47,7 @@
   },
   "dependencies": {
     "bluebird": "^3.4.1",
-    "canon": "^0.4.1",
+    "es6-weak-map": "^2.0.1",
     "mobx": "^2.3.3",
     "mobx-react": "^3.4.0",
     "mqtt": "^1.7.4",

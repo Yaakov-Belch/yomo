@@ -17,8 +17,10 @@ import {
   WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon
 } from './core/react-yomo.js';
 import {connCheck} from './util/connCheck.js';
+import {yomoSelector,yomoDispatcher} from './core/component.js';
 
 export {
+  yomoSelector,yomoDispatcher, // review and approve
   yomoBridge,              // review and approve
   linkPipes,pipes,getPipe, // review, approve or sep package
   onOffAction,onOffActionShared, // review and approve
