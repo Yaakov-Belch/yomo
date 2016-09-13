@@ -1,6 +1,8 @@
 import {newYomo} from './core/new-yomo.js';
 import {
-  cacheSlow,onOffAction,onOffActionShared,yomoRun,yomoAuditor
+  cacheCb,cacheSlow,
+  onOffAction,onOffActionShared,
+  yomoRun,yomoAuditor
 } from './core/cacheFn.js';
 import {linkPipes,pipes,getPipe} from './core/pipes.js';
 import {dispatchAfter,timeNow} from './core/time.js';
@@ -23,6 +25,7 @@ import {yomoSelector,yomoDispatcher} from './core/component.js';
 
 export {
   newYomo, yomoRender,     // approve
+  cacheCb,                 // approve
   yomoSelector,yomoDispatcher, // review and approve
   yomoBridge,              // review and approve
   linkPipes,pipes,getPipe, // review, approve or sep package
