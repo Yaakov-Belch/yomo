@@ -32,6 +32,14 @@ const cacheTrafo=createTransformer(
   }
 );
 
+export const cacheCb=metaFn((spec,yomo,args)=>{
+  const [fn]=spec; const v0=spec.length>=2? spec[1]:vWait;
+  const res=observable(asReference(v0));
+  const setRes=mobx.action((e,v)=>res.set(e?wrapEx(e):v));
+  res.unsub=fn(yomo,setRes,...args);
+  return res;
+});
+
 export const cacheFn=metaFn(([fn],yomo,args)=>{
   return {get:()=>{
     try { return fn(yomo,...args); }
