@@ -6,4 +6,4 @@ Distributed redux on client and server: simple and clear.
 * [Demos][demos]
 
 [r+m=y]: http://yomojs.com/redux-plus-mobx-is-yomo.html
-[demos:] https://github.com/Yaakov-Belch/yomo-demos
+[demos]: https://github.com/Yaakov-Belch/yomo-demos
