@@ -6,7 +6,7 @@ export const xRdTxt=(yomo,path)=>xRdBuffer(yomo,path).toString();
 export const xRdBuffer=cacheCb((yomo,cb,path)=>{
   let old;
   const look=()=>readFile(path,(error,res)=>{
-    if((!old) || res.compare(old)){
+    if((!old) || (!res) || res.compare(old)){
       cb(error,old=res);
     }
   });
@@ -17,7 +17,7 @@ export const xRdBuffer=cacheCb((yomo,cb,path)=>{
 
 export const xRdDir=cacheCb((yomo,cb,path)=>{
   let old;
-  const look=()=>readdir(path,(error,res)=>{
+  const look=()=>readdir(path,(error,res=[])=>{
     res.sort();
     if(!(old && arraysEqual(res,old))){
       cb(error,old=res);

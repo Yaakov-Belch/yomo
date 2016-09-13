@@ -1,3 +1,7 @@
+export const wrapExFn=(fn,v0)=>(...args)=> {
+  try { return fn(...args); }
+  catch(exception) { return (v0!==undefined)? v0:wrapEx(exception); }
+}
 export const wrapEx=(exception)=>({exception});
 export const unwrapEx=(v)=>{
   const e= v && v.exception;
