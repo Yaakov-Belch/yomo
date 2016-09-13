@@ -1,3 +1,4 @@
+import {newYomo} from './core/new-yomo.js';
 import {
   cacheSlow,onOffAction,onOffActionShared,yomoRun,yomoAuditor
 } from './core/cacheFn.js';
@@ -14,12 +15,14 @@ const yomoBridge=(bSpec,ipcSpec)=>
   ipcBridge(mqttIpc,bSpec,ipcSpec);
 
 import {
+  yomoRender,
   WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon
 } from './core/react-yomo.js';
 import {connCheck} from './util/connCheck.js';
 import {yomoSelector,yomoDispatcher} from './core/component.js';
 
 export {
+  newYomo, yomoRender,     // approve
   yomoSelector,yomoDispatcher, // review and approve
   yomoBridge,              // review and approve
   linkPipes,pipes,getPipe, // review, approve or sep package
