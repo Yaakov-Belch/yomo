@@ -2,15 +2,14 @@ import {watch,access,readFile,readdir} from 'fs';
 import {join,resolve,basename,dirname} from 'path';
 import {cacheCb} from '../core/cacheFn.js';
 
-export const pathExists=cacheCb((yomo,cb,path)=>
-  access(path,(e)=>cb(null,!e))
-);
-
 const watch0=(path,cb)=>{
   try {
+    console.log('<',path);
     const watcher=watch(path,cb);
+    console.log('>',path);
     return ()=>watcher.close();
   } catch(e) {
+    console.log('>>',path);
     return ()=>{};
   }
 };
@@ -22,6 +21,7 @@ const watch1=(path,cb)=>{
     if(invalid){ clearFileWatch && clearFileWatch(); clearFileWatch=null; }
     if(on) { clearFileWatch=clearFileWatch||watch0(path,cb1); }
     else   { clearDirWatch =clearDirWatch ||watch1(dir,cb2);  }
+    console.log('<~~<',path);
     access(path,(e)=>{
       if(e) { // path does not exist.
         if(!clearDirWatch) { check(false); }
@@ -37,6 +37,7 @@ const watch1=(path,cb)=>{
         }
       }
     });
+    console.log('>~~>',path);
   };
   const cb1=(event,file)=>{
     if(event==='rename' && file===base) { check(false,true); }
@@ -54,17 +55,28 @@ const watch1=(path,cb)=>{
   };
 };
 
-const watch2=(path,trafo,norm,cmp,cb)=>{
+const diff0=(a,b)=>a!==b;
+const watch2=(path,trafo,norm,cmp,cb)=>{ try {
   let old;
-  return watch1(resolve(path),()=>{
+  console.log('<--<',path);
+  path=resolve(path);
+  console.log('>-->',path);
+  return watch1(path,()=>{
+    console.log('<*<',path);
     trafo(path,(error,res)=>{
-      if(res && norm) { res=norm(res); }
+      if(!error && res && norm) { res=norm(res); }
       if(!old || !res || cmp(old,res)) {
         cb(error,old=res);
       }
     });
+    console.log('>*>',path);
   });
-}
+} catch(e) { console.log("=====",e); throw(e);}}
+
+export const pathExists=cacheCb((yomo,cb,path)=>
+  watch2(path,fileExists,null,diff0,cb)
+);
+const fileExists=(path,cb)=>access(path,(err)=>cb(null,!err));
 
 export const xRdJson=(yomo,path)=>JSON.parse(xRdTxt(yomo,path));
 export const xRdTxt=(yomo,path)=>xRdBuffer(yomo,path).toString();
