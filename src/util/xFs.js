@@ -64,11 +64,18 @@ const watch2=(path,trafo,norm,cmp,cb)=>{
   });
 }
 
-export const dirExists=cacheCb((yomo,cb,path)=>
-  watch2(path,dirExists0,null,diff0,cb)
+export const pathType=cacheCb((yomo,cb,path)=>
+  watch2(path,pathType0,null,diff0,cb)
 );
-const dirExists0=(path,cb)=>
-  stat(path,(err,res)=>cb(null,res && res.isDirectory()));
+const pathType0=(path,cb)=>
+  stat(path,(err,res)=>
+    cb(null,
+      err               ? 'error':
+      res.isFile()      ? 'file':
+      res.isDirectory() ? 'directory':
+      'other'
+    )
+  );
 
 export const xRdJson=(yomo,path)=>JSON.parse(xRdTxt(yomo,path));
 export const xRdTxt=(yomo,path)=>xRdBuffer(yomo,path).toString();
