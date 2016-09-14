@@ -1,4 +1,4 @@
-import {watch,access,readFile,readdir} from 'fs';
+import {watch,access,stat,readFile,readdir} from 'fs';
 import {join,resolve,basename,dirname} from 'path';
 import {cacheCb} from '../core/cacheFn.js';
 
@@ -64,10 +64,11 @@ const watch2=(path,trafo,norm,cmp,cb)=>{
   });
 }
 
-export const pathExists=cacheCb((yomo,cb,path)=>
-  watch2(path,fileExists,null,diff0,cb)
+export const dirExists=cacheCb((yomo,cb,path)=>
+  watch2(path,dirExists0,null,diff0,cb)
 );
-const fileExists=(path,cb)=>access(path,(err)=>cb(null,!err));
+const dirExists0=(path,cb)=>
+  stat(path,(err,res)=>cb(null,res && res.isDirectory()));
 
 export const xRdJson=(yomo,path)=>JSON.parse(xRdTxt(yomo,path));
 export const xRdTxt=(yomo,path)=>xRdBuffer(yomo,path).toString();
