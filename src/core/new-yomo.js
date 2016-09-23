@@ -14,26 +14,28 @@ export const yomoDispatcher=(yc,reducer)=> {
   return indexFast((yomo,action)=>yomo.centralDispatch(yomo,yc,action));
 }
 
+const reduxYc={cid:'redux'};
+
 export const newYomo=()=>{
   const states={};
   const yomoState=(yc)=>{
+    yc=yc||reduxYc;
     let res=states[yc.cid];
-    if(!res) { res=states[yc.cid]=rxValue(undefined); }
+    if(!res) { res=states[yc.cid]=mountComponent(yomo,yc); }
     return res;
   };
   const centralDispatch=(yomo,yc,action)=>
-    process.nextTick(()=>{
-      const r=yomo.yomoState(yc);
-      r.write(yc.reducer(r.data,action));
-    });
+    yomo.yomoState(yc).dispatch(action);
 
-  return {yomoState, yomoCache:{}, yomoRuns:{}, centralDispatch};
+  const yomo={yomoState, yomoCache:{}, yomoRuns:{}, centralDispatch};
+  return yomo;
 }
 
-const rxValue=(data)=>{
-  const r=observable(asReference(data));
-  r.data=data;
+const mountComponent=(yomo,yc)=>{
+  const r=observable(asReference(undefined));
+  r.data=undefined;
   r.write=mobx.action((vv)=>r.set(r.data=vv));
+  r.dispatch=(action)=>r.write(yc.reducer(r.data,action));
   return r;
 }
 

@@ -11,7 +11,7 @@ export const attachReduxStore=(yomo,store)=>{
     console.log('attachReduxStore: Yomo already attached.');
     return;
   }
-  const redux=yomo.yomoState('redux');
+  const redux=yomo.yomoState(null);
   const update=()=>redux.write(store.getState());
   store.subscribe(update); update();
   yomo.initState=(state)=>r.write(state);

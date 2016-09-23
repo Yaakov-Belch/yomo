@@ -6,7 +6,7 @@ export const attachReducer=(yomo,reducer)=>{
     console.log('attachReducer: Yomo already attached.');
     return;
   }
-  const r=yomo.yomoState('redux');
+  const r=yomo.yomoState(null);
   yomo.initState=(state)=>r.write(state);
   yomo.state=()=>r.get();
   yomo.dispatch=(action)=>r.write(reducer(r.data,action));
