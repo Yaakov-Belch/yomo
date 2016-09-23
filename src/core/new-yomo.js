@@ -9,12 +9,10 @@ import {indexFast} from './indexKey.js';
 // yc.cid: unique component id ==> yc.reducer set by yomoDispatcher
 
 export const yomoSelector=(yc)=>(yomo)=>yomo.yomoState(yc).get();
-export const yomoDispatcher=(yc,reducer)=>indexFast((yomo,action)=>
-  process.nextTick(()=>{
-    const r=yomo.yomoState(yc);
-    r.write(reducer(r.data,action));
-  })
-);
+export const yomoDispatcher=(yc,reducer)=> {
+  yc.reducer=reducer;
+  return indexFast((yomo,action)=>yomo.centralDispatch(yomo,yc,action));
+}
 
 export const newYomo=()=>{
   const states={};
@@ -22,8 +20,14 @@ export const newYomo=()=>{
     let res=states[yc.cid];
     if(!res) { res=states[yc.cid]=rxValue(undefined); }
     return res;
-  }
-  return {yomoState, yomoCache:{}, yomoRuns:{}};
+  };
+  const centralDispatch=(yomo,yc,action)=>
+    process.nextTick(()=>{
+      const r=yomo.yomoState(yc);
+      r.write(yc.reducer(r.data,action));
+    });
+
+  return {yomoState, yomoCache:{}, yomoRuns:{}, centralDispatch};
 }
 
 const rxValue=(data)=>{
