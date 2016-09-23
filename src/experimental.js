@@ -21,7 +21,7 @@ import {
   WaitIcon,DelayIcon,OkIcon,UserErrorIcon,ProgramErrorIcon
 } from './core/react-yomo.js';
 import {connCheck} from './util/connCheck.js';
-import {yomoSelector,yomoDispatcher} from './core/component.js';
+import {yomoSelector,yomoDispatcher} from './core/new-yomo.js';
 
 export {
   newYomo, yomoRender,     // approve
