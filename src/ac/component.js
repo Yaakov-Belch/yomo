@@ -5,15 +5,10 @@ mobx.useStrict(true);
 // import {indexKey} from './indexKey.js';
 // component: {cid,initializer?,reducer?}
 
-const reduxComponent={
-  cid:'redux'
-  reducer: (state,action,iid,yomo,component)=>
-    yomo.reducer(state,action,iid,yomo,component)
-};
 
 export const newYomo=()=>{
   const stores={};
-  const getStore=(component=reduxComponent,iid='',action)=>{
+  const getStore=(component,iid,action)=>{
     const {cid}=component;
     const sc=stores[cid]=stores[cid] || {};
     const store=sc[iid]=sc[iid] || newStore(yomo,component,iid);
