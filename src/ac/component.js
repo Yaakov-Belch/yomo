@@ -1,10 +1,31 @@
+// import {indexKey} from './indexKey.js';
+import {waitException} from '../util/my-exceptions';
+
+export yomoSelector=(component)=>(yomo,iid)=>{
+  const store=yomo.getStore(component,iid);
+  if(store) { return store.get(); }
+  else { throw waitException; }
+};
+
+export yomoDispatcher=(component,reducer)=>{
+  component._reducer=reducer; // for initialization on mounting.
+  return (yomo,action,iid)=>{
+    iid=iid || action.iid || '';
+    const store=yomo.getStore(component,iid);
+    if(store) {
+      store.set(reducer(store.state,action,iid,yomo,component));
+    }
+  };
+};
+
+// -----------
+
 import mobx from "mobx";
 const {Atom}=mobx;
 mobx.useStrict(true);
 
-// import {indexKey} from './indexKey.js';
-// component: {cid,initializer?,reducer?}
-
+// component: {cid,_initializer?,_reducer?}
+//   state=_reducer(state,action,iid,yomo,component)
 
 export const newYomo=()=>{
   const stores={};
@@ -19,7 +40,7 @@ export const newYomo=()=>{
 };
 
 const newStore=(yomo,component,iid)=>{
-  const fn=component.intializer||component.reducer||(()=>undefined);
+  const fn=component._intializer||component._reducer||(()=>undefined);
   const store= {
     atom: new Atom(`yomoComponent:${component.cid}:${iid}`),
     state: fn(undefined,{type:'@@redux/INIT'},iid,yomo,component),
