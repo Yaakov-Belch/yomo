@@ -1,13 +1,13 @@
 // import {indexKey} from './indexKey.js';
 import {waitException} from '../util/my-exceptions';
 
-export yomoSelector=(component)=>(yomo,iid)=>{
+export const yomoSelector=(component)=>(yomo,iid)=>{
   const store=yomo.getStore(component,iid);
   if(store) { return store.get(); }
   else { throw waitException; }
 };
 
-export yomoDispatcher=(component,reducer)=>{
+export const yomoDispatcher=(component,reducer)=>{
   component._reducer=reducer; // for initialization on mounting.
   return (yomo,action,iid)=>{
     iid=iid || action.iid || '';
@@ -22,7 +22,7 @@ export yomoDispatcher=(component,reducer)=>{
 
 import mobx from "mobx";
 const {Atom}=mobx;
-mobx.useStrict(true);
+//mobx.useStrict(true);
 
 // component: {cid,_initializer?,_reducer?}
 //   state=_reducer(state,action,iid,yomo,component)
@@ -49,3 +49,11 @@ const newStore=(yomo,component,iid)=>{
   };
   return store;
 };
+
+import {observable,asMap,asFlat, isObservable, asReference} from 'mobx';
+
+const obj=observable(asMap({bar:{}}),asFlat);
+obj.set('foo',new Foo({}));
+console.log(isObservable(obj.get('foo').data));
+
+function Foo(data){ this.data=data; }
