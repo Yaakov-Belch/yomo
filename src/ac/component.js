@@ -18,42 +18,74 @@ export const yomoDispatcher=(component,reducer)=>{
   };
 };
 
+export const componentState=(component)=>(yomo)=>
+  yomo.cState(component.cid);
+
+export const fullState=(yomo)=>yomo.fullState();
+
 // -----------
 
 import mobx from "mobx";
 const {Atom}=mobx;
-//mobx.useStrict(true);
+mobx.useStrict(true);
+import {reuse} from '../util/reuse.js';
 
 // component: {cid,_initializer?,_reducer?}
 //   state=_reducer(state,action,iid,yomo,component)
 
+let yidCounter=0;
 export const newYomo=()=>{
   const stores={};
+  const yid=++yidCounter;
+  const atom=new Atom(`yomoStores:${yid}`); // stores changed
+  const atoms={}; // atoms[cid]: stores[cid] changed
   const getStore=(component,iid,action)=>{
-    const {cid}=component;
-    const sc=stores[cid]=stores[cid] || {};
-    const store=sc[iid]=sc[iid] || newStore(yomo,component,iid);
+    const {cid}=component; let new1, new2;
+    const sc=stores[cid]=stores[cid] || (new1={});
+    const store=sc[iid]=sc[iid] || (new2=newStore(yomo,component,iid));
+
+    if(new1 || new2) { process.nextTick(()=>{
+      atoms[cid]=atoms[cid] || new Atom(`yomoComponent:${yid}:${cid}`);
+      atoms[cid].reportChanged();
+      new1 && atom.reportChanged();
+    });}
+
     return store;
   };
-  const yomo={getStore};
+
+  const oldStates={};
+  const cState=(cid)=>{
+    atoms[cid]=atoms[cid] || new Atom(`yomoComponent:${yid}:${cid}`);
+    atoms[cid].reportObserved();
+    const sc=stores[cid] || {};
+    let res={}; let ok=false;
+    for(let iid in sc) { ok=true;
+      res[iid]=sc[iid].get();
+    }
+    res=oldStates[cid]=reuse(oldStates[cid],res);
+    return ok && res;
+  };
+  const oldState=undefined;
+  const fullState=()=>{
+    atom.reportObserved();
+    let res={};
+    for(let cid in stores { res[cid]=cState(cid); }
+    oldState=reuse(oldState,res);
+    return oldState;
+  }
+
+  const yomo={getStore,cState,fullState};
   return yomo;
 };
 
 const newStore=(yomo,component,iid)=>{
   const fn=component._intializer||component._reducer||(()=>undefined);
+  const state=fn(undefined,{type:'@@redux/INIT'},iid,yomo,component);
   const store= {
     atom: new Atom(`yomoComponent:${component.cid}:${iid}`),
-    state: fn(undefined,{type:'@@redux/INIT'},iid,yomo,component),
-    set: mobx.action((v)=>{store.state=v; atom.reportChanged();}),
-    get: ()=>{atom.reportObserved(); return store.state;}
+    set: mobx.action((v)=>{state=v; atom.reportChanged();}),
+    get: ()=>{atom.reportObserved(); return state;},
+    peek: ()=>state,
   };
   return store;
 };
-
-import {observable,asMap,asFlat, isObservable, asReference} from 'mobx';
-
-const obj=observable(asMap({bar:{}}),asFlat);
-obj.set('foo',new Foo({}));
-console.log(isObservable(obj.get('foo').data));
-
-function Foo(data){ this.data=data; }
